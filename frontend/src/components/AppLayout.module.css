@@ -9,22 +9,20 @@
   width: 220px;
   display: flex;
   flex-direction: column;
-  padding: 24px 14px;
-  border-right: 1px solid var(--line);
-  background: var(--surface);
+  padding: 28px 14px 20px;
+  background: var(--bg);
 }
 .brand {
-  font-family: var(--font-display);
   font-size: 22px;
-  font-weight: 600;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   color: var(--ink);
   text-decoration: none;
-  padding: 0 10px 24px;
-  letter-spacing: 0.01em;
+  padding: 0 12px 28px;
 }
 .sideNav {
   display: grid;
-  gap: 2px;
+  gap: 4px;
 }
 .sideBottom {
   margin-top: auto;
@@ -33,8 +31,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 10px;
-  border-radius: var(--radius);
+  padding: 10px 14px;
+  border-radius: 999px;
   color: var(--ink-2);
   text-decoration: none;
   font: inherit;
@@ -48,12 +46,13 @@
   color: var(--ink);
 }
 .sideLink.active {
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-weight: 500;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  font-weight: 600;
 }
 .whoami {
-  margin: 10px 10px 0;
+  margin: 10px 14px 0;
   font-size: 12px;
   color: var(--ink-3);
 }
@@ -69,7 +68,7 @@
   display: none;
 }
 
-/* 移动端：顶部标题栏 + 底部标签栏 */
+/* 移动端：顶部标题栏 + 底部悬浮导航条 */
 @media (max-width: 767px) {
   .sidebar {
     display: none;
@@ -84,17 +83,15 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 52px;
+    height: calc(52px + env(safe-area-inset-top));
     padding: env(safe-area-inset-top) 8px 0 16px;
-    background: color-mix(in srgb, var(--bg) 88%, transparent);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: blur(16px);
   }
   .topbarTitle {
     flex: 1;
-    font-family: var(--font-display);
     font-size: 17px;
-    font-weight: 600;
+    font-weight: 700;
   }
   .iconBtn {
     font: inherit;
@@ -110,7 +107,7 @@
   }
   .content {
     margin-left: 0;
-    padding: 20px 16px calc(84px + env(safe-area-inset-bottom));
+    padding: 12px 16px calc(100px + env(safe-area-inset-bottom));
   }
   /* 顶栏已经显示标题，页面里的大标题隐藏 */
   .content :global(.page-head) h1 {
@@ -118,25 +115,38 @@
   }
   .tabbar {
     position: fixed;
-    inset: auto 0 0 0;
+    left: 50%;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
     z-index: 10;
+    width: min(360px, calc(100% - 32px));
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    padding-bottom: env(safe-area-inset-bottom);
-    background: var(--surface);
-    border-top: 1px solid var(--line);
+    gap: 4px;
+    padding: 5px;
+    border-radius: 999px;
+    background: var(--dock-bg);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 10px 30px rgb(0 0 0 / 18%);
   }
   .tab {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 2px;
-    padding: 8px 0 6px;
-    font-size: 11px;
-    color: var(--ink-3);
+    justify-content: center;
+    gap: 5px;
+    height: 44px;
+    border-radius: 999px;
+    font-size: 13px;
+    color: var(--dock-ink);
     text-decoration: none;
   }
+  .tab svg {
+    width: 18px;
+    height: 18px;
+  }
   .tab.active {
-    color: var(--accent);
+    background: var(--dock-active-bg);
+    color: var(--dock-active-ink);
+    font-weight: 600;
   }
 }

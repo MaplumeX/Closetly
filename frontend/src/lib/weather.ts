@@ -121,3 +121,34 @@ export const MANUAL_BANDS = [
   { value: 14, label: '凉爽', hint: '10–17℃' },
   { value: 5, label: '寒冷', hint: '<10℃' },
 ] as const
+
+/**
+ * 天色渐变：按体感温度在几组颜色之间插值，冷偏蓝、热偏暖。
+ * 返回 [上方颜色, 下方颜色]；temperature 为空（还没拿到天气）时用中性的浅蓝灰。
+ */
+const SKY_STOPS: [number, string, string][] = [
+  [-5, '#7f9fd6', '#c8d6ee'],
+  [8, '#8db5e6', '#d4e2f4'],
+  [16, '#9fcfdc', '#e6f0ea'],
+  [24, '#f2cf8c', '#fbeed8'],
+  [32, '#f0a066', '#fddcc0'],
+]
+
+function mix(a: string, b: string, t: number): string {
+  const pa = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16))
+  const pb = [1, 3, 5].map((i) => parseInt(b.slice(i, i + 2), 16))
+  return `#${pa.map((v, i) => Math.round(v + (pb[i] - v) * t).toString(16).padStart(2, '0')).join('')}`
+}
+
+export function skyColors(temperature: number | null): [string, string] {
+  if (temperature === null) return ['#c3cede', '#e6ebf2']
+  const first = SKY_STOPS[0]
+  const last = SKY_STOPS[SKY_STOPS.length - 1]
+  if (temperature <= first[0]) return [first[1], first[2]]
+  if (temperature >= last[0]) return [last[1], last[2]]
+  const i = SKY_STOPS.findIndex(([t]) => t > temperature)
+  const [t0, a0, b0] = SKY_STOPS[i - 1]
+  const [t1, a1, b1] = SKY_STOPS[i]
+  const k = (temperature - t0) / (t1 - t0)
+  return [mix(a0, a1, k), mix(b0, b1, k)]
+}

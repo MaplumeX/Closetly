@@ -12,6 +12,7 @@
 }
 .nav h2 {
   font-size: 20px;
+  font-variant-numeric: tabular-nums;
   min-width: 120px;
   text-align: center;
 }
@@ -33,7 +34,7 @@
   gap: 4px;
   min-height: 96px;
   padding: 6px;
-  border: 1px solid var(--line);
+  border: 1px solid transparent;
   border-radius: var(--radius);
   background: var(--surface);
   color: var(--ink);
@@ -42,7 +43,7 @@
   overflow: hidden;
 }
 .day:hover {
-  border-color: var(--ink-3);
+  border-color: var(--line);
 }
 .day[data-outside] {
   background: transparent;

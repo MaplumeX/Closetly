@@ -1,5 +1,11 @@
 .login {
   min-height: 100dvh;
+  background: linear-gradient(
+    170deg,
+    color-mix(in srgb, #8db5e6 var(--sky-strength), var(--bg)) 0%,
+    color-mix(in srgb, #d4e2f4 var(--sky-strength), var(--bg)) 45%,
+    var(--bg) 85%
+  );
   display: grid;
   place-items: center;
   padding: 24px 16px;
@@ -11,6 +17,8 @@
 }
 .card h1 {
   font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 .tagline {
   margin: -12px 0 12px;

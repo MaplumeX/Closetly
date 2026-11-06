@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { errorText, imageUrl, itemTitle, outfitTitle } from '@/api'
 import { ChipSelect } from '@/components/Chips'
@@ -6,7 +6,7 @@ import { OCCASIONS, type Occasion } from '@/constants'
 import { useSaveWearLog, useWearLogs } from '@/hooks/outfits'
 import { useCoords, useRecommendation, useWeather } from '@/hooks/today'
 import { formatFull, todayISO } from '@/lib/date'
-import { describeWeather, LocateError, MANUAL_BANDS } from '@/lib/weather'
+import { describeWeather, LocateError, MANUAL_BANDS, skyColors } from '@/lib/weather'
 import s from './TodayView.module.css'
 
 const MANUAL_KEY = 'closetly.manualTemp'
@@ -63,47 +63,47 @@ export default function TodayView() {
   }
 
   const loggedCount = todayLogs.data?.length ?? 0
+  const [skyA, skyB] = skyColors(temperature)
+  const manualBand = usingManual ? MANUAL_BANDS.find((b) => b.value === temperature) : undefined
 
   return (
     <div>
-      <div className="page-head">
-        <div>
-          <h1>今日推荐</h1>
-          <p>{formatFull(today)}</p>
-        </div>
+      <div className="page-head hide-mobile">
+        <h1>今日推荐</h1>
       </div>
 
-      <section className={`card ${s.weather}`} aria-label="天气">
+      <section className={s.sky} style={{ '--sky-a': skyA, '--sky-b': skyB } as CSSProperties} aria-label="天气">
         <WeatherSummary
+          date={formatFull(today)}
           loading={coords.isPending || (coords.isSuccess && weather.isPending)}
           weather={weather.data}
           error={coords.error ?? weather.error}
           usingManual={usingManual}
+          manualBand={manualBand}
           temperature={temperature}
           bandLabel={r?.band.label}
           warmth={r ? `${r.band.min_warmth}–${r.band.max_warmth}` : null}
         />
-        <div className={s.manual}>
-          <span className={s.manualLabel}>{weather.data ? '按体感调整' : '选择今天的气温'}</span>
-          <div className={s.manualRow}>
-            {MANUAL_BANDS.map((b) => (
-              <button key={b.value} type="button" className={s.bandBtn}
-                aria-pressed={usingManual && temperature === b.value} onClick={() => chooseManual(b.value)}>
-                {b.label}
-                <small>{b.hint}</small>
-              </button>
-            ))}
-          </div>
-          <div className={s.weatherActions}>
-            {manual !== null && weather.data && (
-              <button className="btn btn-sm" onClick={() => chooseManual(null)}>使用实时天气</button>
-            )}
-            {coords.isError && (coords.error as LocateError).kind !== 'unsupported' && (
-              <button className="btn btn-sm" onClick={() => setLocateAttempt((n) => n + 1)}>重新定位</button>
-            )}
-          </div>
-        </div>
       </section>
+
+      <div className={s.bands} role="group" aria-label="气温档位">
+        {MANUAL_BANDS.map((b) => (
+          <button key={b.value} type="button" className={s.band}
+            aria-pressed={usingManual && temperature === b.value} onClick={() => chooseManual(b.value)}>
+            {b.label}
+            <small>{b.hint}</small>
+          </button>
+        ))}
+      </div>
+      <div className={s.bandFoot}>
+        <span>{weather.data ? '觉得冷热不对，可以手动选一个档位' : '选择今天的气温'}</span>
+        {manual !== null && weather.data && (
+          <button className="btn btn-sm" onClick={() => chooseManual(null)}>使用实时天气</button>
+        )}
+        {coords.isError && (coords.error as LocateError).kind !== 'unsupported' && (
+          <button className="btn btn-sm" onClick={() => setLocateAttempt((n) => n + 1)}>重新定位</button>
+        )}
+      </div>
 
       <div className={s.occasion}>
         <span className="muted">场合</span>
@@ -116,7 +116,7 @@ export default function TodayView() {
         </p>
       )}
 
-      <section className={`card ${s.rec}`} aria-live="polite" aria-busy={rec.isFetching}>
+      <section className={s.rec} aria-live="polite" aria-busy={rec.isFetching}>
         {rec.isError && <p className="msg-error">{errorText(rec.error)}</p>}
         {!r && !rec.isError && <p className="muted">{temperature === null ? '正在获取天气…' : '正在挑选…'}</p>}
         {r && r.source === 'empty' && (
@@ -148,7 +148,7 @@ export default function TodayView() {
               ))}
             </ul>
             {r.notes.length > 0 && (
-              <ul className={s.notes}>{r.notes.map((n) => <li key={n}>{n}</li>)}</ul>
+              <ul className={s.why}>{r.notes.map((n) => <li key={n}>{n}</li>)}</ul>
             )}
             {wear.isSuccess && (
               <p className="msg-ok">已记录：今天穿这套。<Link to="/calendar">查看穿着记录</Link></p>
@@ -175,40 +175,51 @@ export default function TodayView() {
 }
 
 function WeatherSummary({
+  date,
   loading,
   weather,
   error,
   usingManual,
+  manualBand,
   temperature,
   bandLabel,
   warmth,
 }: {
+  date: string
   loading: boolean
   weather?: { current: number; feelsMax: number; feelsMin: number; feels: number; rainChance: number | null; code: number }
   error: Error | null
   usingManual: boolean
+  manualBand?: { label: string; hint: string }
   temperature: number | null
   bandLabel?: string
   warmth: string | null
 }) {
-  if (loading && !usingManual) return <p className="muted">正在定位并获取天气…</p>
   const w = weather && describeWeather(weather.code)
   return (
-    <div className={s.summary}>
-      {weather && w ? (
-        <div className={s.now}>
-          <span className={s.icon} aria-hidden="true">{w.icon}</span>
-          <div>
-            <div className={s.temp}>{Math.round(weather.current)}℃ <span>{w.text}</span></div>
-            <div className="muted">
-              体感 {Math.round(weather.feelsMin)}～{Math.round(weather.feelsMax)}℃
-              {weather.rainChance !== null && weather.rainChance >= 30 && ` · 降水概率 ${weather.rainChance}%`}
-            </div>
-          </div>
-        </div>
-      ) : (
-        <p className="muted">{error ? `${error.message}，请手动选择今天的气温。` : ''}</p>
-      )}
+    <>
+      <p className={s.skyDate}>{date}{w && ` · ${w.text}`}</p>
+      {loading && !usingManual ? (
+        <p className={s.skyWait}>正在定位并获取天气…</p>
+      ) : weather && !usingManual ? (
+        <>
+          <p className={s.temp}>{Math.round(weather.current)}<span>℃</span></p>
+          <p className={s.skySub}>
+            体感 {Math.round(weather.feelsMin)}～{Math.round(weather.feelsMax)}℃
+            {weather.rainChance !== null && weather.rainChance >= 30 && ` · 降水概率 ${weather.rainChance}%`}
+          </p>
+        </>
+      ) : manualBand ? (
+        <>
+          <p className={`${s.temp} ${s.tempWord}`}>{manualBand.label}</p>
+          <p className={s.skySub}>
+            {manualBand.hint}
+            {weather
+              ? ` · 实时 ${Math.round(weather.current)}℃，体感 ${Math.round(weather.feelsMin)}～${Math.round(weather.feelsMax)}℃`
+              : error && ` · ${error.message}`}
+          </p>
+        </>
+      ) : null}
       {temperature !== null && bandLabel && (
         <p className={s.advice}>
           按{usingManual ? '所选档位' : `体感 ${temperature}℃`}推荐：{bandLabel}，保暖度 {warmth}
@@ -216,6 +227,6 @@ function WeatherSummary({
           {weather && weather.rainChance !== null && weather.rainChance >= 50 && '；可能下雨，记得带伞'}
         </p>
       )}
-    </div>
+    </>
   )
 }

@@ -16,7 +16,7 @@
 }
 .photo {
   display: block;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   overflow: hidden;
   background: var(--surface-2);
 }
@@ -83,8 +83,7 @@
 }
 .outfits h2 {
   font-size: 15px;
-  font-family: var(--font);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--ink-2);
 }
 .outfits ul {

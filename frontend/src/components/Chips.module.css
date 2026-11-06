@@ -7,7 +7,7 @@
   font: inherit;
   font-size: 14px;
   min-height: 36px;
-  padding: 0 14px;
+  padding: 0 16px;
   border-radius: 999px;
   border: 1px solid var(--line);
   background: var(--surface);
@@ -20,9 +20,9 @@
 }
 .chip[aria-pressed='true'],
 .chip[aria-checked='true'] {
-  background: var(--accent-soft);
-  border-color: var(--accent);
-  color: var(--accent);
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
   font-weight: 500;
 }
 
@@ -57,7 +57,8 @@
   background: var(--surface-2);
 }
 .swatch[aria-pressed='true'] {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--accent);
+  border-color: var(--ink);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 500;
 }

@@ -10,8 +10,8 @@
   aspect-ratio: 3 / 4;
   padding: 0;
   overflow: hidden;
-  border: 1.5px dashed var(--line);
-  border-radius: var(--radius-lg);
+  border: 1.5px dashed var(--ink-3);
+  border-radius: var(--radius-xl);
   background: var(--surface-2);
   color: var(--ink-2);
   cursor: pointer;

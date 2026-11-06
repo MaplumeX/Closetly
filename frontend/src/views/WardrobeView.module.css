@@ -21,20 +21,19 @@
 
 .tabs {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   overflow-x: auto;
   scrollbar-width: none;
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 .tab {
   font: inherit;
+  font-size: 14px;
   flex: none;
-  padding: 10px 14px;
+  padding: 7px 16px;
   border: 0;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  background: none;
+  border-radius: 999px;
+  background: var(--surface);
   color: var(--ink-2);
   cursor: pointer;
 }
@@ -42,12 +41,12 @@
   color: var(--ink);
 }
 .tab[aria-pressed='true'] {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
+  background: var(--ink);
+  color: var(--bg);
   font-weight: 500;
 }
 .subTabs {
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .panel {
@@ -89,7 +88,7 @@
 .thumb {
   position: relative;
   aspect-ratio: 3 / 4;
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   background: var(--surface-2);
 }
@@ -104,8 +103,8 @@
 }
 .badge {
   position: absolute;
-  left: 8px;
-  top: 8px;
+  left: 10px;
+  top: 10px;
   padding: 1px 8px;
   border-radius: 999px;
   font-size: 12px;
