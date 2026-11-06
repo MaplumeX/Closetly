@@ -1,0 +1,133 @@
+/* 自定义下拉类控件（Select / DateInput / 标签建议）共用的触发器与弹层样式 */
+
+.root {
+  position: relative;
+  min-width: 0;
+}
+
+.trigger {
+  font: inherit;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.trigger:hover:not(:disabled) {
+  border-color: var(--ink-3);
+}
+.trigger[aria-expanded='true'] {
+  border-color: var(--accent);
+}
+.trigger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.placeholder {
+  color: var(--ink-3);
+}
+.icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--ink-3);
+  transition: transform 0.18s;
+}
+.trigger[aria-expanded='true'] .chevron {
+  transform: rotate(180deg);
+}
+
+.panel {
+  position: absolute;
+  left: 0;
+  z-index: 30;
+  min-width: 100%;
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 6px rgb(23 32 51 / 6%), 0 16px 40px rgb(23 32 51 / 16%);
+  animation: pop-in 0.14s ease-out;
+}
+.panel[data-placement='down'] {
+  top: calc(100% + 6px);
+  transform-origin: top;
+}
+.panel[data-placement='up'] {
+  bottom: calc(100% + 6px);
+  transform-origin: bottom;
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(-4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    animation: none;
+  }
+}
+
+/* 选项列表 */
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 300px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.list:focus {
+  outline: none;
+}
+.groupLabel {
+  padding: 8px 10px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+.option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.option[data-grouped] {
+  padding-left: 18px;
+}
+.option[data-active] {
+  background: var(--surface-2);
+}
+.option[aria-selected='true'] {
+  color: var(--accent);
+  font-weight: 600;
+}
+.option .check {
+  margin-left: auto;
+  width: 16px;
+  height: 16px;
+  visibility: hidden;
+}
+.option[aria-selected='true'] .check {
+  visibility: visible;
+}

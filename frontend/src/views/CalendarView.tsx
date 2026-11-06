@@ -1,5 +1,6 @@
 import { Link, useSearchParams } from 'react-router'
 import { errorText, imageUrl, itemTitle, outfitTitle, type ItemBrief, type WearLog } from '@/api'
+import { confirmDialog } from '@/components/dialogs'
 import { useDeleteWearLog, useWearLogs } from '@/hooks/outfits'
 import { formatDay, monthGrid, monthOf, shiftMonth, todayISO } from '@/lib/date'
 import s from './CalendarView.module.css'
@@ -24,8 +25,14 @@ export default function CalendarView() {
   const [y, m] = month.split('-').map(Number)
   const dayLogs = [...(byDay.get(selected) ?? [])].reverse() // 同一天按记录先后
 
-  function onDelete(log: WearLog) {
-    if (window.confirm(`删除 ${formatDay(log.worn_on)} 的这条记录？`)) del.mutate(log.id)
+  async function onDelete(log: WearLog) {
+    const ok = await confirmDialog({
+      title: `删除${formatDay(log.worn_on)}的这条记录？`,
+      message: '只删除这条穿着记录，衣物和搭配不受影响。',
+      confirmText: '删除',
+      danger: true,
+    })
+    if (ok) del.mutate(log.id)
   }
 
   return (

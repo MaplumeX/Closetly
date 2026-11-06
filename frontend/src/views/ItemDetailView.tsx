@@ -2,7 +2,9 @@ import type { ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { errorText, imageUrl, itemTitle, outfitTitle } from '@/api'
 import { ColorDot } from '@/components/Chips'
+import { confirmDialog } from '@/components/dialogs'
 import { OutfitCollage } from '@/components/OutfitCollage'
+import { Select } from '@/components/Select'
 import { COLORS, labelOf, OCCASIONS, SEASONS, STATUSES, WARMTH_LABELS, type ItemStatus } from '@/constants'
 import { useDeleteItem, useItem, useUpdateItem } from '@/hooks/items'
 import { useOutfits } from '@/hooks/outfits'
@@ -20,8 +22,14 @@ export default function ItemDetailView() {
   if (isPending) return null
   if (error || !item) return <p className="msg-error">{errorText(error)}</p>
 
-  function onDelete() {
-    if (!window.confirm(`确定删除「${itemTitle(item!)}」吗？它也会从所有搭配和穿着记录中移除，无法恢复。`)) return
+  async function onDelete() {
+    const ok = await confirmDialog({
+      title: `删除「${itemTitle(item!)}」？`,
+      message: '它也会从所有搭配和穿着记录中移除，无法恢复。',
+      confirmText: '删除',
+      danger: true,
+    })
+    if (!ok) return
     del.mutate(id, { onSuccess: () => navigate('/wardrobe', { replace: true }) })
   }
 
@@ -62,13 +70,11 @@ export default function ItemDetailView() {
         </a>
 
         <div className={s.info}>
-          <label className={`field ${s.status}`}>
+          <div className={`field ${s.status}`}>
             <span>状态</span>
-            <select value={item.status} disabled={update.isPending}
-              onChange={(e) => update.mutate({ status: e.target.value as ItemStatus })}>
-              {STATUSES.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-          </label>
+            <Select<ItemStatus> aria-label="状态" value={item.status} options={STATUSES} disabled={update.isPending}
+              onChange={(v) => update.mutate({ status: v })} />
+          </div>
 
           <dl className={s.attrs}>
             {rows.filter((r) => r.value).map((r) => (

@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { api, errorText, type User } from '@/api'
 import { useMe } from '@/auth'
+import { Checkbox } from '@/components/Checkbox'
+import { confirmDialog, promptDialog } from '@/components/dialogs'
 import s from './AdminUsersView.module.css'
 
 const USERS_KEY = ['admin', 'users'] as const
@@ -32,15 +34,31 @@ export default function AdminUsersView() {
     )
   }
 
-  function toggleActive(u: User) {
+  async function toggleActive(u: User) {
+    if (u.is_active) {
+      const ok = await confirmDialog({
+        title: `停用 ${u.username}？`,
+        message: '停用后该用户无法登录，数据会保留，随时可以重新启用。',
+        confirmText: '停用',
+        danger: true,
+      })
+      if (!ok) return
+    }
     action.mutate({
       run: () => api(`/api/admin/users/${u.id}`, { method: 'PATCH', body: { is_active: !u.is_active } }),
       ok: u.is_active ? `已停用 ${u.username}` : `已启用 ${u.username}`,
     })
   }
 
-  function resetPassword(u: User) {
-    const pw = window.prompt(`为 ${u.username} 设置新密码（至少 8 位）`)
+  async function resetPassword(u: User) {
+    const pw = await promptDialog({
+      title: `重置 ${u.username} 的密码`,
+      label: '新密码（至少 8 位）',
+      type: 'password',
+      autoComplete: 'new-password',
+      confirmText: '重置',
+      validate: (v) => (v.length < 8 ? '密码至少 8 位' : null),
+    })
     if (!pw) return
     action.mutate({
       run: () => api(`/api/admin/users/${u.id}/password`, { method: 'POST', body: { password: pw } }),
@@ -97,10 +115,7 @@ export default function AdminUsersView() {
             <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })}
               autoComplete="new-password" minLength={8} required />
           </label>
-          <label className={s.check}>
-            <input type="checkbox" checked={form.is_admin} onChange={(e) => setForm({ ...form, is_admin: e.target.checked })} />
-            设为管理员
-          </label>
+          <Checkbox checked={form.is_admin} onChange={(v) => setForm({ ...form, is_admin: v })}>设为管理员</Checkbox>
           <div>
             <button className="btn btn-primary" disabled={action.isPending}>创建</button>
           </div>

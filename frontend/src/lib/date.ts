@@ -68,3 +68,16 @@ export function monthRange(month: string): { start: string; end: string } {
   const [y, m] = month.split('-').map(Number)
   return { start: `${month}-01`, end: toISO(new Date(y, m, 0)) }
 }
+
+/** 2026年11月6日 周五（始终带年份） */
+export function formatLong(s: string): string {
+  const d = parseISO(s)
+  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 周${WEEKDAYS[d.getDay()]}`
+}
+
+/** 按月平移日期；目标月没有这一天时取月末（1月31日 + 1个月 = 2月28/29日） */
+export function addMonths(s: string, n: number): string {
+  const [y, m, d] = s.split('-').map(Number)
+  const lastDay = new Date(y, m - 1 + n + 1, 0).getDate()
+  return toISO(new Date(y, m - 1 + n, Math.min(d, lastDay)))
+}

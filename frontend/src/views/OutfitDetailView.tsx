@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { errorText, imageUrl, itemTitle, outfitTitle } from '@/api'
+import { confirmDialog } from '@/components/dialogs'
 import { labelOf, STATUSES } from '@/constants'
 import { useDeleteOutfit, useOutfit, useSaveWearLog } from '@/hooks/outfits'
 import { formatDay, todayISO } from '@/lib/date'
@@ -20,8 +21,14 @@ export default function OutfitDetailView() {
   const unavailable = outfit.items.filter((i) => i.status !== 'active')
   const doneToday = wornToday || outfit.last_worn_on === todayISO()
 
-  function onDelete() {
-    if (!window.confirm(`确定删除「${outfitTitle(outfit!)}」吗？衣物和穿着记录不受影响。`)) return
+  async function onDelete() {
+    const ok = await confirmDialog({
+      title: `删除「${outfitTitle(outfit!)}」？`,
+      message: '衣物和穿着记录不受影响。',
+      confirmText: '删除',
+      danger: true,
+    })
+    if (!ok) return
     del.mutate(id, { onSuccess: () => navigate('/outfits', { replace: true }) })
   }
 

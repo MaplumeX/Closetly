@@ -4,7 +4,9 @@ import { OCCASIONS, SEASONS, STATUSES, WARMTH_LABELS, type Color, type ItemStatu
 import { toInput, type Draft } from '@/lib/itemDraft'
 import { useCategories, useTags } from '@/hooks/items'
 import { ChipGroup, ChipSelect, ColorSwatches } from './Chips'
+import { DateInput } from './DateInput'
 import { PhotoPicker } from './PhotoPicker'
+import { Select } from './Select'
 import { TagInput } from './TagInput'
 import s from './ItemForm.module.css'
 
@@ -59,17 +61,12 @@ export function ItemForm({
       <div className={s.fields}>
         <section className={s.section}>
           <h2>基本信息</h2>
-          <Field label="分类" required>
-            <select value={d.category_id ?? ''} onChange={(e) => set('category_id', e.target.value ? Number(e.target.value) : null)}>
-              <option value="">请选择</option>
-              {categories?.map((top) => (
-                <optgroup key={top.id} label={top.name}>
-                  {top.children.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
+          <Field label="分类" required as="div">
+            <Select aria-label="分类" value={d.category_id} onChange={(v) => set('category_id', v)}
+              options={(categories ?? []).map((top) => ({
+                label: top.name,
+                options: top.children.map((c) => ({ value: c.id, label: c.name })),
+              }))} />
           </Field>
           <Field label="季节" required as="div">
             <ChipGroup label="季节" options={SEASONS} value={d.seasons} onChange={(v) => set('seasons', v)} />
@@ -101,15 +98,11 @@ export function ItemForm({
             <Field label="价格（元）">
               <input value={d.price} onChange={(e) => set('price', e.target.value)} inputMode="decimal" placeholder="0.00" />
             </Field>
-            <Field label="购买日期">
-              <input type="date" value={d.purchase_date} onChange={(e) => set('purchase_date', e.target.value)} />
+            <Field label="购买日期" as="div">
+              <DateInput aria-label="购买日期" clearable value={d.purchase_date} onChange={(v) => set('purchase_date', v)} />
             </Field>
-            <Field label="状态">
-              <select value={d.status} onChange={(e) => set('status', e.target.value as ItemStatus)}>
-                {STATUSES.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
+            <Field label="状态" as="div">
+              <Select<ItemStatus> aria-label="状态" value={d.status} options={STATUSES} onChange={(v) => set('status', v)} />
             </Field>
           </div>
           <Field label="收纳位置">

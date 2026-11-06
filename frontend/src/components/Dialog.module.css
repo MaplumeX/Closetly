@@ -1,0 +1,84 @@
+.dialog {
+  width: min(420px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 24px 64px rgb(15 20 28 / 28%);
+  animation: dialog-in 0.18s ease-out;
+}
+.dialog::backdrop {
+  background: rgb(15 20 28 / 42%);
+  backdrop-filter: blur(2px);
+  animation: fade-in 0.18s ease-out;
+}
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dialog,
+  .dialog::backdrop {
+    animation: none;
+  }
+}
+
+.body {
+  display: grid;
+  gap: 14px;
+  padding: 24px;
+}
+.body h2 {
+  font-size: 18px;
+}
+.message {
+  margin: -4px 0 0;
+  color: var(--ink-2);
+  font-size: 14px;
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+.danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: var(--accent-ink);
+}
+.danger:hover {
+  background: var(--danger);
+  filter: brightness(1.06);
+}
+
+/* 手机上从底部弹出，按钮铺满 */
+@media (max-width: 767px) {
+  .dialog {
+    width: 100%;
+    max-width: none;
+    margin: auto 0 0;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    animation-name: sheet-in;
+  }
+  .body {
+    padding: 24px 20px calc(20px + env(safe-area-inset-bottom));
+  }
+  .actions > * {
+    flex: 1;
+  }
+}
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}

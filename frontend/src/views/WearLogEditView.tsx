@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { errorText, outfitTitle, type ItemBrief, type Outfit } from '@/api'
+import { DateInput } from '@/components/DateInput'
 import { ItemPicker } from '@/components/ItemPicker'
 import { OutfitCollage } from '@/components/OutfitCollage'
 import { useOutfit, useOutfits, useSaveWearLog, useWearLog } from '@/hooks/outfits'
@@ -81,10 +82,10 @@ function WearLogForm({ id, initial }: { id: number | null; initial: Initial }) {
 
       <div className={s.form}>
         <div className={s.row}>
-          <label className="field">
+          <div className="field">
             <span>日期</span>
-            <input type="date" value={wornOn} max="9999-12-31" onChange={(e) => setWornOn(e.target.value)} required />
-          </label>
+            <DateInput aria-label="日期" value={wornOn} onChange={setWornOn} />
+          </div>
           <label className="field">
             <span>备注</span>
             <input value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={2000} placeholder="例如：面试、下雨" />
