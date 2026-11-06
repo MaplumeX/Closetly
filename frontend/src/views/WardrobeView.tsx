@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router'
-import { errorText, imageUrl, itemTitle, type Item } from '@/api'
-import { ChipGroup, ColorDot, ColorSwatches } from '@/components/Chips'
-import { labelOf, OCCASIONS, SEASONS, STATUSES, type Occasion, type Season, type ItemStatus } from '@/constants'
-import { useCategories, useItems, useTags } from '@/hooks/items'
+import { errorText, imageUrl, itemKind, itemTitle, type Item } from '@/api'
+import { ChipGroup, ChipSelect, ColorDot, ColorSwatches } from '@/components/Chips'
+import { labelOf, OCCASIONS, SEASONS, SLOTS, STATUSES, type ItemStatus, type Occasion, type Season, type Slot } from '@/constants'
+import { useItems, useKinds, useTags } from '@/hooks/items'
 import s from './WardrobeView.module.css'
 
 /** 面板里的多选筛选项；URL 参数名与后端接口一致 */
@@ -11,7 +11,6 @@ const LIST_PARAMS = ['season', 'color', 'occasion', 'status', 'tag'] as const
 
 export default function WardrobeView() {
   const [params, setParams] = useSearchParams()
-  const { data: categories } = useCategories()
   const { data: tags } = useTags()
   const items = useItems(params.toString())
   const [panelOpen, setPanelOpen] = useState(false)
@@ -36,8 +35,14 @@ export default function WardrobeView() {
       p.delete(k)
       values.forEach((v) => p.append(k, v))
     })
-  const setCategory = (id: number | null) =>
-    update((p) => (id === null ? p.delete('category_id') : p.set('category_id', String(id))))
+  /** 切换部位时清掉类型，因为类型是挂在部位下面的 */
+  const setSlot = (v: Slot | null) =>
+    update((p) => {
+      p.delete('kind')
+      if (v === null) p.delete('slot')
+      else p.set('slot', v)
+    })
+  const setKind = (v: string | null) => update((p) => (v === null ? p.delete('kind') : p.set('kind', v)))
 
   // ---- 搜索框：输入停顿 300ms 后再写入 URL ----
   const [q, setQ] = useState(params.get('q') ?? '')
@@ -48,15 +53,14 @@ export default function WardrobeView() {
     return () => clearTimeout(t)
   }, [q, urlQ, update])
 
-  // ---- 分类：一级标签页 + 二级标签 ----
-  const categoryId = params.get('category_id') ? Number(params.get('category_id')) : null
-  const activeTop = useMemo(
-    () => categories?.find((t) => t.id === categoryId || t.children.some((c) => c.id === categoryId)) ?? null,
-    [categories, categoryId],
-  )
+  // ---- 分类：部位标签页 + 该部位下用过的类型 ----
+  const slot = (SLOTS.find((x) => x.value === params.get('slot'))?.value ?? null) as Slot | null
+  const kind = params.get('kind')
+  const { data: kinds } = useKinds(slot)
+  const kindOptions = useMemo(() => (kinds ?? []).map((k) => ({ value: k.name, label: `${k.name} ${k.count}` })), [kinds])
 
   const panelCount = LIST_PARAMS.reduce((n, k) => n + list(k).length, 0)
-  const anyFilter = panelCount > 0 || categoryId !== null || !!params.get('q')
+  const anyFilter = panelCount > 0 || slot !== null || !!params.get('q')
 
   function clearAll() {
     setQ('')
@@ -81,22 +85,17 @@ export default function WardrobeView() {
         </button>
       </div>
 
-      <nav className={s.tabs} aria-label="分类">
-        <button className={s.tab} aria-pressed={categoryId === null} onClick={() => setCategory(null)}>全部</button>
-        {categories?.map((t) => (
-          <button key={t.id} className={s.tab} aria-pressed={activeTop?.id === t.id} onClick={() => setCategory(t.id)}>
-            {t.name}
+      <nav className={s.tabs} aria-label="部位">
+        <button className={s.tab} aria-pressed={slot === null} onClick={() => setSlot(null)}>全部</button>
+        {SLOTS.map((t) => (
+          <button key={t.value} className={s.tab} aria-pressed={slot === t.value} onClick={() => setSlot(t.value)}>
+            {t.label}
           </button>
         ))}
       </nav>
-      {activeTop && (
+      {slot && kindOptions.length > 0 && (
         <div className={s.subTabs}>
-          <ChipGroup
-            label="二级分类"
-            options={activeTop.children.map((c) => ({ value: String(c.id), label: c.name }))}
-            value={categoryId !== activeTop.id && categoryId !== null ? [String(categoryId)] : []}
-            onChange={(v) => setCategory(v.length ? Number(v.at(-1)) : activeTop.id)}
-          />
+          <ChipSelect label="类型" options={kindOptions} value={kind} onChange={setKind} />
         </div>
       )}
 
@@ -163,7 +162,7 @@ function ItemCard({ item }: { item: Item }) {
           <span className={s.title}>{itemTitle(item)}</span>
           <span className={s.sub}>
             {item.color && <ColorDot color={item.color} size={10} />}
-            {item.name ? item.category_path.split(' / ').at(-1) : item.seasons.map((v) => labelOf(SEASONS, v)).join('')}
+            {item.name ? itemKind(item) : item.seasons.map((v) => labelOf(SEASONS, v)).join('')}
           </span>
         </div>
       </Link>

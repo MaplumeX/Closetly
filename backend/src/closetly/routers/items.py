@@ -3,26 +3,34 @@ from decimal import Decimal
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, HTTPException, Query, Request, status
-from sqlalchemy import exists, func, or_, select
+from sqlalchemy import exists, func, or_, select, update
 from sqlalchemy.orm import Session
 
 from ..deps import CurrentUserDep, DbDep
 from ..images import ImageStore
-from ..item_queries import category_info, item_load_options, wear_stats
-from ..models import Category, Item, ItemStatus, Tag, item_tags
-from ..schemas import Color, ItemCreateIn, ItemOut, ItemUpdateIn, Occasion, Season, TagOut
+from ..item_queries import item_load_options, wear_stats
+from ..models import Item, ItemStatus, Slot, Tag, item_tags
+from ..schemas import (
+    Color,
+    ItemCreateIn,
+    ItemOut,
+    ItemUpdateIn,
+    KindOut,
+    KindRenameIn,
+    Occasion,
+    Season,
+    TagOut,
+)
 
 router = APIRouter(prefix="/api", tags=["items"])
 
 
 def item_out(item: Item, stats: tuple[int, date] | None = None) -> ItemOut:
-    path, slot = category_info(item)
     wear_count, last_worn_on = stats or (0, None)
     return ItemOut(
         id=item.id,
-        category_id=item.category_id,
-        category_path=path,
-        slot=slot,
+        slot=item.slot,
+        kind=item.kind,
         image_key=item.image_key,
         name=item.name,
         seasons=item.seasons,
@@ -75,11 +83,6 @@ def _resolve_tags(db: Session, user_id: int, names: list[str]) -> list[Tag]:
     return tags
 
 
-def _check_category(db: Session, category_id: int) -> None:
-    if not db.get(Category, category_id):
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "分类不存在")
-
-
 def _check_image(db: Session, store: ImageStore, user_id: int, key: str, item_id: int | None = None) -> None:
     if not store.exists(user_id, key):
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "图片不存在，请重新上传")
@@ -100,7 +103,8 @@ def list_items(
     user: CurrentUserDep,
     db: DbDep,
     q: str | None = None,
-    category_id: int | None = None,
+    slot: Slot | None = None,
+    kind: str | None = None,
     season: Annotated[list[Season] | None, Query()] = None,
     color: Annotated[list[Color] | None, Query()] = None,
     occasion: Annotated[list[Occasion] | None, Query()] = None,
@@ -112,9 +116,10 @@ def list_items(
     不传 status 时默认隐藏「已淘汰」。"""
     stmt = select(Item).where(Item.user_id == user.id).options(*item_load_options())
 
-    if category_id is not None:
-        child_ids = select(Category.id).where(Category.parent_id == category_id)
-        stmt = stmt.where(or_(Item.category_id == category_id, Item.category_id.in_(child_ids)))
+    if slot is not None:
+        stmt = stmt.where(Item.slot == slot)
+    if kind:
+        stmt = stmt.where(Item.kind == kind)
     if season:
         stmt = stmt.where(_json_has_any(Item.seasons, season))
     if occasion:
@@ -142,7 +147,6 @@ def list_items(
 
 @router.post("/items", response_model=ItemOut, status_code=status.HTTP_201_CREATED)
 def create_item(body: ItemCreateIn, request: Request, user: CurrentUserDep, db: DbDep):
-    _check_category(db, body.category_id)
     _check_image(db, request.app.state.image_store, user.id, body.image_key)
     data = body.model_dump(exclude={"tags", "price"})
     item = Item(user_id=user.id, price_cents=_to_cents(body.price), **data)
@@ -164,13 +168,11 @@ def update_item(item_id: int, body: ItemUpdateIn, request: Request, user: Curren
     changes = body.model_dump(exclude_unset=True)
 
     # 这几个字段必填，不允许传 null
-    for field in ("category_id", "image_key", "seasons", "occasions", "status", "tags"):
+    for field in ("slot", "image_key", "seasons", "occasions", "status", "tags"):
         if field in changes and changes[field] is None:
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, f"{field} 不能为空")
 
     old_image = None
-    if "category_id" in changes:
-        _check_category(db, changes["category_id"])
     if "image_key" in changes and changes["image_key"] != item.image_key:
         _check_image(db, store, user.id, changes["image_key"], item.id)
         old_image = item.image_key
@@ -209,3 +211,29 @@ def list_tags(user: CurrentUserDep, db: DbDep):
         .order_by(count.desc(), Tag.name)
     ).all()
     return [TagOut(name=n, count=c) for n, c in rows]
+
+
+@router.get("/kinds", response_model=list[KindOut])
+def list_kinds(user: CurrentUserDep, db: DbDep):
+    """当前用户用过的类型及衣物数量（含已淘汰的衣物），用于输入联想、筛选和管理。"""
+    count = func.count(Item.id)
+    rows = db.execute(
+        select(Item.slot, Item.kind, count)
+        .where(Item.user_id == user.id, Item.kind.is_not(None))
+        .group_by(Item.slot, Item.kind)
+        .order_by(Item.slot, count.desc(), Item.kind)
+    ).all()
+    order = list(Slot)
+    rows = sorted(rows, key=lambda r: order.index(r[0]))  # 按部位的固定顺序，而不是字母顺序
+    return [KindOut(slot=s, name=k, count=c) for s, k, c in rows]
+
+
+@router.patch("/kinds", status_code=status.HTTP_204_NO_CONTENT)
+def rename_kind(body: KindRenameIn, user: CurrentUserDep, db: DbDep):
+    """重命名、合并或清除一个类型，作用于该部位下所有用这个类型的衣物。"""
+    db.execute(
+        update(Item)
+        .where(Item.user_id == user.id, Item.slot == body.slot, Item.kind == body.name)
+        .values(kind=body.new_name, updated_at=Item.updated_at)  # 只是整理类型，不算修改衣物
+    )
+    db.commit()

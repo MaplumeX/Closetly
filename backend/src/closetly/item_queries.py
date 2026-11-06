@@ -4,9 +4,9 @@ from datetime import date
 
 from fastapi import HTTPException, status
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session, joinedload, selectinload
+from sqlalchemy.orm import Session, selectinload
 
-from .models import Category, Item, Slot, WearLog, wear_log_items
+from .models import Item, Slot, WearLog, wear_log_items
 from .schemas import ItemBrief
 
 # 展示一套搭配时的单品顺序：从外到内、从上到下
@@ -14,20 +14,12 @@ SLOT_ORDER = {Slot.OUTER: 0, Slot.ONEPIECE: 1, Slot.TOP: 2, Slot.BOTTOM: 3, Slot
 
 
 def item_load_options():
-    return (joinedload(Item.category).joinedload(Category.parent), selectinload(Item.tags))
-
-
-def category_info(item: Item) -> tuple[str, Slot | None]:
-    cat = item.category
-    top = cat.parent or cat
-    path = f"{cat.parent.name} / {cat.name}" if cat.parent else cat.name
-    return path, top.slot
+    return (selectinload(Item.tags),)
 
 
 def item_brief(item: Item) -> ItemBrief:
-    path, slot = category_info(item)
     return ItemBrief(
-        id=item.id, image_key=item.image_key, name=item.name, category_path=path, slot=slot, status=item.status
+        id=item.id, image_key=item.image_key, name=item.name, slot=item.slot, kind=item.kind, status=item.status
     )
 
 

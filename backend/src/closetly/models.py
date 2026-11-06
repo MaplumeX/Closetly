@@ -8,6 +8,7 @@ from sqlalchemy import (
     DateTime,
     Enum,
     ForeignKey,
+    Index,
     Integer,
     String,
     Table,
@@ -32,7 +33,7 @@ class ItemStatus(enum.StrEnum):
 
 
 class Slot(enum.StrEnum):
-    """分类在推荐组合中占据的位置，只设置在一级分类上。"""
+    """部位：衣物的一级分类，固定不变。推荐时按部位组合搭配。"""
 
     TOP = "top"
     BOTTOM = "bottom"
@@ -40,6 +41,16 @@ class Slot(enum.StrEnum):
     OUTER = "outer"
     SHOES = "shoes"
     ACCESSORY = "accessory"
+
+
+SLOT_LABELS = {
+    Slot.TOP: "上装",
+    Slot.BOTTOM: "下装",
+    Slot.ONEPIECE: "连衣裙/连体",
+    Slot.OUTER: "外套",
+    Slot.SHOES: "鞋",
+    Slot.ACCESSORY: "配饰",
+}
 
 
 class User(Base):
@@ -63,26 +74,6 @@ class UserSession(Base):
     expires_at: Mapped[datetime] = mapped_column(DateTime)
 
     user: Mapped[User] = relationship()
-
-
-class Category(Base):
-    """全局共用的两级分类。"""
-
-    __tablename__ = "categories"
-    __table_args__ = (UniqueConstraint("parent_id", "name"),)
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    parent_id: Mapped[int | None] = mapped_column(
-        ForeignKey("categories.id", ondelete="RESTRICT"), index=True
-    )
-    name: Mapped[str] = mapped_column(String(64))
-    slot: Mapped[Slot | None] = mapped_column(_str_enum(Slot))
-    sort_order: Mapped[int] = mapped_column(Integer, default=0)
-
-    children: Mapped[list["Category"]] = relationship(
-        back_populates="parent", order_by="Category.sort_order"
-    )
-    parent: Mapped["Category | None"] = relationship(back_populates="children", remote_side=[id])
 
 
 item_tags = Table(
@@ -119,10 +110,13 @@ class Tag(Base):
 
 class Item(Base):
     __tablename__ = "items"
+    __table_args__ = (Index("ix_items_user_slot_kind", "user_id", "slot", "kind"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
-    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id", ondelete="RESTRICT"))
+    slot: Mapped[Slot] = mapped_column(_str_enum(Slot))
+    # 类型（二级分类），由用户自由填写，例如「牛仔裤」；同一用户同一部位下的相同文字视为同一类型
+    kind: Mapped[str | None] = mapped_column(String(32))
     # 图片文件名前缀，对应 images/<user_id>/<key>.webp 与 <key>_thumb.webp
     image_key: Mapped[str] = mapped_column(String(64))
 
@@ -143,7 +137,6 @@ class Item(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
 
-    category: Mapped[Category] = relationship()
     tags: Mapped[list[Tag]] = relationship(secondary=item_tags)
 
 

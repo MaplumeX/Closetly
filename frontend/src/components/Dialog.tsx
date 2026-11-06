@@ -11,7 +11,7 @@ export function DialogHost() {
 
 function DialogView({ req }: { req: Request }) {
   const ref = useRef<HTMLDialogElement>(null)
-  const [text, setText] = useState('')
+  const [text, setText] = useState(req.kind === 'prompt' ? (req.defaultValue ?? '') : '')
   const [error, setError] = useState<string | null>(null)
   const done = useRef(false)
 

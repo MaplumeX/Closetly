@@ -54,12 +54,6 @@ def upload(client, data: bytes | None = None) -> str:
     return r.json()["key"]
 
 
-def leaf_category(client, top: str = "上装", child: str = "T恤") -> int:
-    cats = client.get("/api/categories").json()
-    parent = next(c for c in cats if c["name"] == top)
-    return next(c["id"] for c in parent["children"] if c["name"] == child)
-
-
 def login_as(client, username: str, password: str):
     client.post("/api/auth/logout")
     assert client.post("/api/auth/login", json={"username": username, "password": password}).status_code == 200
@@ -67,7 +61,8 @@ def login_as(client, username: str, password: str):
 
 def new_item(client, **overrides):
     body = {
-        "category_id": leaf_category(client),
+        "slot": "top",
+        "kind": "T恤",
         "image_key": upload(client),
         "seasons": ["spring", "summer"],
         **overrides,

@@ -1,18 +1,18 @@
 import { useState } from 'react'
 import { imageUrl, itemTitle, toBrief, type ItemBrief } from '@/api'
-import { useCategories, useItems } from '@/hooks/items'
+import { SLOTS, type Slot } from '@/constants'
+import { useItems } from '@/hooks/items'
 import { useDebounced } from '@/lib/useDebounced'
 import s from './ItemPicker.module.css'
 
-/** 从衣柜中挑选单品。上方是已选列表，下方是可按分类、关键词筛选的衣柜。 */
+/** 从衣柜中挑选单品。上方是已选列表，下方是可按部位、关键词筛选的衣柜。 */
 export function ItemPicker({ selected, onChange }: { selected: ItemBrief[]; onChange: (v: ItemBrief[]) => void }) {
-  const { data: categories } = useCategories()
-  const [top, setTop] = useState<number | null>(null)
+  const [slot, setSlot] = useState<Slot | null>(null)
   const [q, setQ] = useState('')
   const debouncedQ = useDebounced(q.trim())
 
   const query = new URLSearchParams()
-  if (top !== null) query.set('category_id', String(top))
+  if (slot !== null) query.set('slot', slot)
   if (debouncedQ) query.set('q', debouncedQ)
   const items = useItems(query.toString())
 
@@ -39,11 +39,11 @@ export function ItemPicker({ selected, onChange }: { selected: ItemBrief[]; onCh
 
       <div className={s.browser}>
         <input type="search" placeholder="搜索衣物" value={q} onChange={(e) => setQ(e.target.value)} aria-label="搜索衣物" />
-        <div className={s.tabs} role="tablist" aria-label="分类">
-          <button type="button" role="tab" aria-selected={top === null} onClick={() => setTop(null)}>全部</button>
-          {categories?.map((c) => (
-            <button key={c.id} type="button" role="tab" aria-selected={top === c.id} onClick={() => setTop(c.id)}>
-              {c.name}
+        <div className={s.tabs} role="tablist" aria-label="部位">
+          <button type="button" role="tab" aria-selected={slot === null} onClick={() => setSlot(null)}>全部</button>
+          {SLOTS.map((c) => (
+            <button key={c.value} type="button" role="tab" aria-selected={slot === c.value} onClick={() => setSlot(c.value)}>
+              {c.label}
             </button>
           ))}
         </div>

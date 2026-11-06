@@ -2,7 +2,7 @@ from collections import Counter
 
 from closetly.recommend import band_for, season_for
 
-from .conftest import leaf_category, new_item
+from .conftest import new_item
 
 DAY = "2026-11-06"  # 秋季
 
@@ -17,9 +17,12 @@ def names(result):
     return {i["name"] for i in result["items"]}
 
 
-def item(client, name, top, child, **kw):
+SLOTS = {"上装": "top", "下装": "bottom", "连衣裙/连体": "onepiece", "外套": "outer", "鞋": "shoes", "配饰": "accessory"}
+
+
+def item(client, name, slot, kind, **kw):
     kw.setdefault("seasons", ["autumn"])
-    return new_item(client, name=name, category_id=leaf_category(client, top, child), **kw)
+    return new_item(client, name=name, slot=SLOTS[slot], kind=kind, **kw)
 
 
 def test_bands_and_seasons():

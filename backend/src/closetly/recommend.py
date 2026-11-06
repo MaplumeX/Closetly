@@ -13,20 +13,13 @@ import random
 from dataclasses import dataclass, field
 from datetime import date
 
-from .item_queries import category_info, sorted_briefs
-from .models import Item, Outfit, Slot
+from .item_queries import sorted_briefs
+from .models import SLOT_LABELS, Item, Outfit, Slot
 from .schemas import ItemBrief
 
 RECENT_WEIGHT = 0.15
 SKIP_WEIGHT = 0.25
 
-SLOT_LABELS = {
-    Slot.TOP: "上装",
-    Slot.BOTTOM: "下装",
-    Slot.ONEPIECE: "连衣裙/连体",
-    Slot.OUTER: "外套",
-    Slot.SHOES: "鞋",
-}
 SEASON_LABELS = {"spring": "春", "summer": "夏", "autumn": "秋", "winter": "冬"}
 
 
@@ -88,9 +81,9 @@ class Recommender:
         self.skip = skip
         self.avoid_days = avoid_days
         self.rng = rng
-        self.by_slot: dict[Slot | None, list[Item]] = {}
+        self.by_slot: dict[Slot, list[Item]] = {}
         for it in self.items:
-            self.by_slot.setdefault(category_info(it)[1], []).append(it)
+            self.by_slot.setdefault(it.slot, []).append(it)
 
     # ---- 单品 ----
 
@@ -151,7 +144,7 @@ class Recommender:
         weights = [min(self._weight(i) for i in o.items) for o in valid]
         outfit = self.rng.choices(valid, weights=weights)[0]
         result = Result("outfit", items=list(outfit.items), outfit=outfit)
-        has_outer = any(category_info(i)[1] == Slot.OUTER for i in outfit.items)
+        has_outer = any(i.slot == Slot.OUTER for i in outfit.items)
         if self.band.need_outer and not has_outer and (outers := self._pool(Slot.OUTER, result.notes)):
             result.items.append(self._pick(outers))
             result.notes.append("天气偏冷，加了一件外套")

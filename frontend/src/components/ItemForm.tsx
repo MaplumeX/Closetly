@@ -1,10 +1,11 @@
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import type { ItemInput } from '@/api'
-import { OCCASIONS, SEASONS, STATUSES, WARMTH_LABELS, type Color, type ItemStatus } from '@/constants'
+import { KIND_EXAMPLES, OCCASIONS, SEASONS, SLOTS, STATUSES, WARMTH_LABELS, type Color, type ItemStatus } from '@/constants'
 import { toInput, type Draft } from '@/lib/itemDraft'
-import { useCategories, useTags } from '@/hooks/items'
+import { useKinds, useTags } from '@/hooks/items'
 import { ChipGroup, ChipSelect, ColorSwatches } from './Chips'
 import { DateInput } from './DateInput'
+import { KindInput } from './KindInput'
 import { PhotoPicker } from './PhotoPicker'
 import { Select } from './Select'
 import { TagInput } from './TagInput'
@@ -15,7 +16,7 @@ const PRICE_RE = /^\d{1,7}(\.\d{1,2})?$/
 function validate(d: Draft): string[] {
   const p: string[] = []
   if (!d.image_key) p.push('请添加照片')
-  if (!d.category_id) p.push('请选择分类')
+  if (!d.slot) p.push('请选择部位')
   if (!d.seasons.length) p.push('请至少选择一个季节')
   if (d.price.trim() && !PRICE_RE.test(d.price.trim())) p.push('价格格式不正确')
   return p
@@ -36,9 +37,9 @@ export function ItemForm({
   /** 提交按钮，按钮的 value 会作为 submitter 传给 onSubmit */
   actions: ReactNode
 }) {
-  const { data: categories } = useCategories()
   const { data: tags } = useTags()
   const [d, setD] = useState(initial)
+  const { data: kinds } = useKinds(d.slot)
   // 第一次点保存之后才显示校验结果，之后随输入实时更新
   const [tried, setTried] = useState(false)
   const problems = useMemo(() => validate(d), [d])
@@ -61,18 +62,19 @@ export function ItemForm({
       <div className={s.fields}>
         <section className={s.section}>
           <h2>基本信息</h2>
-          <Field label="分类" required as="div">
-            <Select aria-label="分类" value={d.category_id} onChange={(v) => set('category_id', v)}
-              options={(categories ?? []).map((top) => ({
-                label: top.name,
-                options: top.children.map((c) => ({ value: c.id, label: c.name })),
-              }))} />
+          <Field label="部位" required as="div">
+            <ChipSelect label="部位" options={SLOTS} value={d.slot} allowEmpty={false}
+              onChange={(v) => v && set('slot', v)} />
+          </Field>
+          <Field label="类型" hint="自己定义，可不填" as="div">
+            <KindInput aria-label="类型" value={d.kind} onChange={(v) => set('kind', v)} suggestions={kinds}
+              disabled={!d.slot} placeholder={d.slot ? `例如：${KIND_EXAMPLES[d.slot]}` : '先选择部位'} />
           </Field>
           <Field label="季节" required as="div">
             <ChipGroup label="季节" options={SEASONS} value={d.seasons} onChange={(v) => set('seasons', v)} />
           </Field>
           <Field label="名称">
-            <input value={d.name} onChange={(e) => set('name', e.target.value)} maxLength={128} placeholder="不填则显示分类名" />
+            <input value={d.name} onChange={(e) => set('name', e.target.value)} maxLength={128} placeholder="不填则显示类型或部位" />
           </Field>
           <Field label="主色" as="div">
             <ColorSwatches label="主色" single value={d.color ? [d.color] : []}
