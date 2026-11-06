@@ -178,3 +178,40 @@ def test_user_isolation(admin_client):
     assert r.status_code == 422
     login_as(admin_client, "admin", "admin-pass-123")
     assert admin_client.get(f"/api/items/{item['id']}").json()["kind"] == "T恤"
+
+
+def test_photo_is_optional(admin_client, settings):
+    """照片选填：可以先录入，之后再补拍、更换或删除照片。"""
+    plain = new_item(admin_client, image_key=None, name="没拍照的衬衫", color="navy")
+    assert plain["image_key"] is None
+    r = admin_client.post("/api/items", json={"slot": "bottom", "seasons": ["winter"]})  # 不传 image_key
+    assert r.status_code == 201 and r.json()["image_key"] is None
+    photo = new_item(admin_client)
+
+    def ids(**params):
+        return {i["id"] for i in admin_client.get("/api/items", params=params).json()}
+
+    assert ids(photo="false") == {plain["id"], r.json()["id"]}
+    assert ids(photo="true") == {photo["id"]}
+
+    # 补拍
+    key = upload(admin_client)
+    out = admin_client.patch(f"/api/items/{plain['id']}", json={"image_key": key}).json()
+    assert out["image_key"] == key
+    # 删除照片：衣物保留，图片文件被删掉
+    out = admin_client.patch(f"/api/items/{plain['id']}", json={"image_key": None}).json()
+    assert out["image_key"] is None and out["name"] == "没拍照的衬衫"
+    assert admin_client.get(f"/api/images/{key}").status_code == 404
+    # 没有照片的衣物也能删除
+    assert admin_client.delete(f"/api/items/{plain['id']}").status_code == 204
+
+
+def test_brief_includes_color(admin_client):
+    """搭配里的单品没有照片时，前端要用主色画占位剪影。"""
+    a = new_item(admin_client, image_key=None, color="navy")
+    b = new_item(admin_client, slot="bottom")
+    r = admin_client.post("/api/outfits", json={"item_ids": [a["id"], b["id"]]})
+    assert r.status_code == 201, r.text
+    briefs = {i["id"]: i for i in r.json()["items"]}
+    assert briefs[a["id"]]["image_key"] is None and briefs[a["id"]]["color"] == "navy"
+    assert briefs[b["id"]]["color"] is None

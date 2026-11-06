@@ -111,10 +111,11 @@ def list_items(
     occasion: Annotated[list[Occasion] | None, Query()] = None,
     item_status: Annotated[list[ItemStatus] | None, Query(alias="status")] = None,
     tag: Annotated[list[str] | None, Query()] = None,
+    photo: bool | None = None,
     sort: Literal["created", "updated", "purchase"] = "created",
 ):
     """多个筛选条件之间是「并且」；同一条件选多个值是「或者」。
-    不传 status 时默认隐藏「已淘汰」。"""
+    不传 status 时默认隐藏「已淘汰」。photo=false 只看还没有照片的衣物。"""
     stmt = select(Item).where(Item.user_id == user.id).options(*item_load_options())
 
     if slot is not None:
@@ -132,6 +133,8 @@ def list_items(
     stmt = stmt.where(Item.status.in_(item_status) if item_status else Item.status != ItemStatus.RETIRED)
     if tag:
         stmt = stmt.where(Item.tags.any(Tag.name.in_(tag)))
+    if photo is not None:
+        stmt = stmt.where(Item.image_key.is_not(None) if photo else Item.image_key.is_(None))
     if q and (kw := q.strip()):
         like = "%" + kw.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
         stmt = stmt.where(
@@ -150,7 +153,8 @@ def list_items(
 
 @router.post("/items", response_model=ItemOut, status_code=status.HTTP_201_CREATED)
 def create_item(body: ItemCreateIn, request: Request, user: CurrentUserDep, db: DbDep):
-    _check_image(db, request.app.state.image_store, user.id, body.image_key)
+    if body.image_key:
+        _check_image(db, request.app.state.image_store, user.id, body.image_key)
     data = body.model_dump(exclude={"tags", "price", "color"})
     item = Item(
         user_id=user.id, price_cents=_to_cents(body.price), **resolve_color(db, user.id, body.color), **data
@@ -173,13 +177,15 @@ def update_item(item_id: int, body: ItemUpdateIn, request: Request, user: Curren
     changes = body.model_dump(exclude_unset=True)
 
     # 这几个字段必填，不允许传 null
-    for field in ("slot", "image_key", "seasons", "occasions", "status", "tags"):
+    for field in ("slot", "seasons", "occasions", "status", "tags"):
         if field in changes and changes[field] is None:
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, f"{field} 不能为空")
 
+    # 换照片或删除照片（image_key 传 null）后，旧图片文件在提交成功后删除
     old_image = None
     if "image_key" in changes and changes["image_key"] != item.image_key:
-        _check_image(db, store, user.id, changes["image_key"], item.id)
+        if changes["image_key"]:
+            _check_image(db, store, user.id, changes["image_key"], item.id)
         old_image = item.image_key
     if "tags" in changes:
         item.tags = _resolve_tags(db, user.id, changes.pop("tags"))
@@ -203,7 +209,8 @@ def delete_item(item_id: int, request: Request, user: CurrentUserDep, db: DbDep)
     key = item.image_key
     db.delete(item)
     db.commit()
-    request.app.state.image_store.delete(user.id, key)
+    if key:
+        request.app.state.image_store.delete(user.id, key)
 
 
 @router.get("/tags", response_model=list[TagOut])
