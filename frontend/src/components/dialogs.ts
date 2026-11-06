@@ -11,6 +11,8 @@ interface PromptOptions {
   title: string
   message?: string
   label: string
+  /** 输入框的初始内容 */
+  defaultValue?: string
   type?: 'text' | 'password'
   autoComplete?: string
   confirmText?: string

@@ -1,10 +1,11 @@
 import type { Item, ItemInput } from '@/api'
-import type { Color, ItemStatus, Occasion, Season } from '@/constants'
+import type { Color, ItemStatus, Occasion, Season, Slot } from '@/constants'
 
 /** 表单内部状态：文本字段用空字符串表示未填写 */
 export interface Draft {
   image_key: string | null
-  category_id: number | null
+  slot: Slot | null
+  kind: string
   seasons: Season[]
   name: string
   color: Color | null
@@ -21,7 +22,8 @@ export interface Draft {
 
 export const emptyDraft: Draft = {
   image_key: null,
-  category_id: null,
+  slot: null,
+  kind: '',
   seasons: [],
   name: '',
   color: null,
@@ -39,7 +41,8 @@ export const emptyDraft: Draft = {
 export function itemToDraft(item: Item, withImage = true): Draft {
   return {
     image_key: withImage ? item.image_key : null,
-    category_id: item.category_id,
+    slot: item.slot,
+    kind: item.kind ?? '',
     seasons: item.seasons,
     name: item.name ?? '',
     color: item.color,
@@ -59,7 +62,8 @@ export function toInput(d: Draft): ItemInput {
   const orNull = (v: string) => v.trim() || null
   return {
     image_key: d.image_key!,
-    category_id: d.category_id!,
+    slot: d.slot!,
+    kind: orNull(d.kind),
     seasons: d.seasons,
     name: orNull(d.name),
     color: d.color,

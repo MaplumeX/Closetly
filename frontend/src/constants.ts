@@ -1,3 +1,23 @@
+/** 部位：固定的一级分类，推荐搭配时按部位组合 */
+export const SLOTS = [
+  { value: 'top', label: '上装' },
+  { value: 'bottom', label: '下装' },
+  { value: 'onepiece', label: '连衣裙/连体' },
+  { value: 'outer', label: '外套' },
+  { value: 'shoes', label: '鞋' },
+  { value: 'accessory', label: '配饰' },
+] as const
+
+/** 录入类型时的输入提示，只做示例，不预置到数据库 */
+export const KIND_EXAMPLES: Record<Slot, string> = {
+  top: 'T恤、衬衫、卫衣',
+  bottom: '牛仔裤、半身裙',
+  onepiece: '连衣裙、背带裤',
+  outer: '夹克、羽绒服',
+  shoes: '运动鞋、靴子',
+  accessory: '包、帽子、围巾',
+}
+
 export const SEASONS = [
   { value: 'spring', label: '春' },
   { value: 'summer', label: '夏' },
@@ -38,6 +58,7 @@ export const STATUSES = [
 
 export const WARMTH_LABELS = ['', '很薄', '薄', '适中', '厚', '很厚'] as const
 
+export type Slot = (typeof SLOTS)[number]['value']
 export type Season = (typeof SEASONS)[number]['value']
 export type Occasion = (typeof OCCASIONS)[number]['value']
 export type Color = (typeof COLORS)[number]['value']

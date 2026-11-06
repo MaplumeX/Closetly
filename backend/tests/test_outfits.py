@@ -1,11 +1,11 @@
-from .conftest import leaf_category, login_as, new_item
+from .conftest import login_as, new_item
 
 
 def make_wardrobe(client):
     top = new_item(client, name="白T")
-    bottom = new_item(client, name="牛仔裤", category_id=leaf_category(client, "下装", "牛仔裤"))
-    shoes = new_item(client, name="球鞋", category_id=leaf_category(client, "鞋", "运动鞋"))
-    coat = new_item(client, name="风衣", category_id=leaf_category(client, "外套", "风衣"))
+    bottom = new_item(client, name="牛仔裤", slot="bottom", kind="牛仔裤")
+    shoes = new_item(client, name="球鞋", slot="shoes", kind="运动鞋")
+    coat = new_item(client, name="风衣", slot="outer", kind="风衣")
     return top, bottom, shoes, coat
 
 

@@ -10,7 +10,8 @@ import { useCreateItem, useItem, useUpdateItem } from '@/hooks/items'
 function carryOver(d: Draft): Draft {
   return {
     ...emptyDraft,
-    category_id: d.category_id,
+    slot: d.slot,
+    kind: d.kind,
     seasons: d.seasons,
     occasions: d.occasions,
     location: d.location,

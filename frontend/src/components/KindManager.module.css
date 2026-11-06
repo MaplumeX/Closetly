@@ -1,0 +1,46 @@
+.card {
+  display: grid;
+  gap: 16px;
+  max-width: 440px;
+}
+.card h2 {
+  font-size: 18px;
+}
+.hint {
+  margin: -10px 0 0;
+  font-size: 13px;
+}
+.group h3 {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+.group:last-of-type .row:last-child {
+  border-bottom: 0;
+}
+.name {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.count {
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.actions {
+  display: flex;
+  gap: 8px;
+}

@@ -1,21 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api, type Category, type Item, type ItemInput, type TagCount } from '@/api'
+import { api, type Item, type ItemInput, type KindCount, type TagCount } from '@/api'
+import type { Slot } from '@/constants'
 import { prepareImage } from '@/lib/image'
 
 export const keys = {
-  categories: ['categories'] as const,
   items: ['items'] as const,
   itemList: (query: string) => ['items', 'list', query] as const,
   item: (id: number) => ['items', 'detail', id] as const,
   tags: ['tags'] as const,
-}
-
-export function useCategories() {
-  return useQuery({
-    queryKey: keys.categories,
-    queryFn: () => api<Category[]>('/api/categories'),
-    staleTime: Infinity,
-  })
+  kinds: ['kinds'] as const,
 }
 
 /** query 是 URL 查询串（不含 ?），参数名与后端一致 */
@@ -39,6 +32,25 @@ export function useTags() {
   return useQuery({ queryKey: keys.tags, queryFn: () => api<TagCount[]>('/api/tags') })
 }
 
+/** 当前用户用过的类型；传 slot 时只返回该部位下的 */
+export function useKinds(slot?: Slot | null) {
+  return useQuery({
+    queryKey: keys.kinds,
+    queryFn: () => api<KindCount[]>('/api/kinds'),
+    select: slot ? (data) => data.filter((k) => k.slot === slot) : undefined,
+  })
+}
+
+/** 重命名一个类型；改成已有的名字即合并，new_name 为 null 即清除 */
+export function useRenameKind() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: { slot: Slot; name: string; new_name: string | null }) =>
+      api('/api/kinds', { method: 'PATCH', body }),
+    onSuccess: () => invalidateAll(qc),
+  })
+}
+
 export async function uploadImage(file: File): Promise<string> {
   const form = new FormData()
   const blob = await prepareImage(file)
@@ -49,7 +61,7 @@ export async function uploadImage(file: File): Promise<string> {
 
 /** 衣物变化会影响列表、标签，以及搭配和穿着记录里展示的单品 */
 function invalidateAll(qc: ReturnType<typeof useQueryClient>) {
-  for (const queryKey of [keys.items, keys.tags, ['outfits'], ['wear-logs']]) qc.invalidateQueries({ queryKey })
+  for (const queryKey of [keys.items, keys.tags, keys.kinds, ['outfits'], ['wear-logs']]) qc.invalidateQueries({ queryKey })
 }
 
 function useInvalidateItems() {

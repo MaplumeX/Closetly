@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload
 
 from ..deps import CurrentUserDep, DbDep
 from ..item_queries import item_load_options, wear_stats
-from ..models import Category, Item, ItemStatus, Outfit
+from ..models import Item, ItemStatus, Outfit
 from ..recommend import Recommender, band_for, season_for
 from ..schemas import BandOut, Occasion, RecommendationOut
 
@@ -34,7 +34,7 @@ def recommend(
     outfits = db.scalars(
         select(Outfit)
         .where(Outfit.user_id == user.id)
-        .options(selectinload(Outfit.items).joinedload(Item.category).joinedload(Category.parent))
+        .options(selectinload(Outfit.items))
     ).unique().all()
     last_worn = {item_id: last for item_id, (_, last) in wear_stats(db, user.id).items()}
 

@@ -4,14 +4,14 @@ from sqlalchemy.orm import Session, selectinload
 
 from ..deps import CurrentUserDep, DbDep
 from ..item_queries import load_user_items, sorted_briefs
-from ..models import Category, Item, Outfit, WearLog, outfit_items
+from ..models import Outfit, WearLog, outfit_items
 from ..schemas import OutfitCreateIn, OutfitOut, OutfitUpdateIn
 
 router = APIRouter(prefix="/api/outfits", tags=["outfits"])
 
 
 def _options():
-    return (selectinload(Outfit.items).joinedload(Item.category).joinedload(Category.parent),)
+    return (selectinload(Outfit.items),)
 
 
 def _wear_stats(db: Session, user_id: int, outfit_ids: list[int]) -> dict[int, tuple[int, object]]:

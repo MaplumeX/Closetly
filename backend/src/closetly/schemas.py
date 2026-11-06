@@ -55,15 +55,6 @@ class ResetPasswordIn(BaseModel):
     password: NewPassword
 
 
-class CategoryOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    name: str
-    slot: Slot | None
-    children: list["CategoryOut"] = []
-
-
 # ---------- 衣物 ----------
 
 Season = Literal["spring", "summer", "autumn", "winter"]
@@ -92,6 +83,7 @@ def OptText(max_length: int):  # noqa: N802
     ]
 
 
+KindName = OptText(32)
 TagName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=32)]
 ImageKey = Annotated[str, StringConstraints(pattern=KEY_PATTERN)]
 Seasons = Annotated[list[Season], AfterValidator(_dedupe), Field(min_length=1)]
@@ -101,7 +93,8 @@ Price = Annotated[Decimal, Field(ge=0, le=Decimal("9999999.99"), decimal_places=
 
 
 class ItemCreateIn(BaseModel):
-    category_id: int
+    slot: Slot
+    kind: KindName = None
     image_key: ImageKey
     seasons: Seasons
     name: OptText(128) = None
@@ -120,7 +113,8 @@ class ItemCreateIn(BaseModel):
 class ItemUpdateIn(BaseModel):
     """部分更新：只修改请求里出现的字段；可空字段传 null 表示清空。"""
 
-    category_id: int | None = None
+    slot: Slot | None = None
+    kind: KindName = None
     image_key: ImageKey | None = None
     seasons: Seasons | None = None
     name: OptText(128) = None
@@ -138,9 +132,8 @@ class ItemUpdateIn(BaseModel):
 
 class ItemOut(BaseModel):
     id: int
-    category_id: int
-    category_path: str  # 例如「上装 / T恤」
-    slot: Slot | None
+    slot: Slot
+    kind: str | None
     image_key: str
     name: str | None
     seasons: list[Season]
@@ -165,6 +158,21 @@ class TagOut(BaseModel):
     count: int
 
 
+class KindOut(BaseModel):
+    slot: Slot
+    name: str
+    count: int
+
+
+class KindRenameIn(BaseModel):
+    """把某个部位下的一个类型改名；new_name 为空表示清除（衣物只保留部位）。
+    改成同部位下已有的类型名，就相当于合并。"""
+
+    slot: Slot
+    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=32)]
+    new_name: KindName = None
+
+
 class ImageOut(BaseModel):
     key: str
 
@@ -180,8 +188,8 @@ class ItemBrief(BaseModel):
     id: int
     image_key: str
     name: str | None
-    category_path: str
-    slot: Slot | None
+    slot: Slot
+    kind: str | None
     status: ItemStatus
 
 

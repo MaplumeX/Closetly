@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 
 from ..deps import CurrentUserDep, DbDep
 from ..item_queries import load_user_items, sorted_briefs
-from ..models import Category, Item, Outfit, WearLog, wear_log_items
+from ..models import Outfit, WearLog, wear_log_items
 from ..schemas import WearLogCreateIn, WearLogOut, WearLogUpdateIn
 
 router = APIRouter(prefix="/api/wear-logs", tags=["wear-logs"])
@@ -14,7 +14,7 @@ router = APIRouter(prefix="/api/wear-logs", tags=["wear-logs"])
 
 def _options():
     return (
-        selectinload(WearLog.items).joinedload(Item.category).joinedload(Category.parent),
+        selectinload(WearLog.items),
         joinedload(WearLog.outfit),
     )
 

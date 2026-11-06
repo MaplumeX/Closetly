@@ -75,7 +75,7 @@ backend/
     main.py          应用入口（create_app），托管前端静态文件
     config.py        配置（CLOSETLY_* 环境变量）
     models.py        数据模型
-    bootstrap.py     启动时执行迁移、写入预置分类、创建管理员
+    bootstrap.py     启动时执行迁移、创建管理员、清理图片
     security.py      密码哈希与会话 token
     ratelimit.py     登录限流
     routers/         API 路由

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
-import { errorText, imageUrl, itemTitle, outfitTitle } from '@/api'
+import { errorText, imageUrl, itemCategory, itemTitle, outfitTitle } from '@/api'
 import { ColorDot } from '@/components/Chips'
 import { confirmDialog } from '@/components/dialogs'
 import { OutfitCollage } from '@/components/OutfitCollage'
@@ -40,7 +40,7 @@ export default function ItemDetailView() {
     </span>
   )
   const rows: { label: string; value: ReactNode }[] = [
-    { label: '分类', value: item.category_path },
+    { label: '分类', value: itemCategory(item) },
     { label: '季节', value: item.seasons.map((v) => labelOf(SEASONS, v)).join(' · ') },
     { label: '主色', value: colorNode },
     { label: '场合', value: item.occasions.map((v) => labelOf(OCCASIONS, v)).join(' · ') },

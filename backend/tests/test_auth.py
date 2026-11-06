@@ -11,7 +11,7 @@ def test_health(client):
 
 def test_requires_login(client):
     assert client.get("/api/auth/me").status_code == 401
-    assert client.get("/api/categories").status_code == 401
+    assert client.get("/api/kinds").status_code == 401
 
 
 def test_admin_bootstrap_and_login(client):
@@ -73,11 +73,3 @@ def test_change_password_logs_out_other_sessions(settings):
             b.post("/api/auth/login", json={"username": "admin", "password": "new-pass-456"}).status_code
             == 200
         )
-
-
-def test_categories_seeded(admin_client):
-    cats = admin_client.get("/api/categories").json()
-    names = [c["name"] for c in cats]
-    assert names[0] == "上装" and "鞋" in names
-    assert cats[0]["slot"] == "top"
-    assert any(child["name"] == "T恤" for child in cats[0]["children"])
