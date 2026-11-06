@@ -1,14 +1,22 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router'
-import { errorText, imageUrl, itemKind, itemTitle, type Item } from '@/api'
+import { errorText, itemKind, itemTitle, type Item } from '@/api'
 import { ChipGroup, ChipSelect, ColorDot, ColorSwatches } from '@/components/Chips'
 import { labelOf, OCCASIONS, SEASONS, SLOTS, STATUSES, type ItemStatus, type Occasion, type Season, type Slot } from '@/constants'
 import { usePalette, type PaletteColor } from '@/hooks/colors'
 import { useItems, useKinds, useTags } from '@/hooks/items'
+import { ItemThumb } from '@/components/ItemThumb'
 import s from './WardrobeView.module.css'
 
 /** 面板里的多选筛选项；URL 参数名与后端接口一致 */
 const LIST_PARAMS = ['season', 'color', 'occasion', 'status', 'tag'] as const
+
+/** 照片是单选：photo=false 只看还没拍照的，方便集中补拍 */
+const PHOTO_OPTIONS = [
+  { value: 'false', label: '还没有照片' },
+  { value: 'true', label: '有照片' },
+] as const
+type PhotoFilter = (typeof PHOTO_OPTIONS)[number]['value']
 
 export default function WardrobeView() {
   const [params, setParams] = useSearchParams()
@@ -61,7 +69,10 @@ export default function WardrobeView() {
   const { data: kinds } = useKinds(slot)
   const kindOptions = useMemo(() => (kinds ?? []).map((k) => ({ value: k.name, label: `${k.name} ${k.count}` })), [kinds])
 
-  const panelCount = LIST_PARAMS.reduce((n, k) => n + list(k).length, 0)
+  const photo = (PHOTO_OPTIONS.find((o) => o.value === params.get('photo'))?.value ?? null) as PhotoFilter | null
+  const setPhoto = (v: PhotoFilter | null) => update((p) => (v === null ? p.delete('photo') : p.set('photo', v)))
+
+  const panelCount = LIST_PARAMS.reduce((n, k) => n + list(k).length, 0) + (photo ? 1 : 0)
   const anyFilter = panelCount > 0 || slot !== null || !!params.get('q')
 
   function clearAll() {
@@ -112,6 +123,9 @@ export default function WardrobeView() {
           <Filter label="状态" hint="不选时显示除「已淘汰」以外的全部">
             <ChipGroup label="状态" options={STATUSES} value={list('status') as ItemStatus[]} onChange={setList('status')} />
           </Filter>
+          <Filter label="照片">
+            <ChipSelect label="照片" options={PHOTO_OPTIONS} value={photo} onChange={setPhoto} />
+          </Filter>
           <Filter label="主色">
             <ColorSwatches label="主色" options={palette} value={list('color')} onChange={setList('color')} />
           </Filter>
@@ -159,7 +173,7 @@ function ItemCard({ item, color }: { item: Item; color?: PaletteColor }) {
     <li>
       <Link to={`/wardrobe/${item.id}`} className={s.card}>
         <div className={s.thumb}>
-          <img src={imageUrl(item.image_key, 'thumb')} alt="" loading="lazy" />
+          <ItemThumb item={item} hint />
           {item.status !== 'active' && <span className={s.badge}>{labelOf(STATUSES, item.status)}</span>}
         </div>
         <div className={s.meta}>

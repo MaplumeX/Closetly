@@ -1,12 +1,13 @@
 import { useState, type CSSProperties } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { errorText, imageUrl, itemTitle, outfitTitle } from '@/api'
+import { errorText, itemTitle, outfitTitle } from '@/api'
 import { ChipSelect } from '@/components/Chips'
 import { OCCASIONS, type Occasion } from '@/constants'
 import { useSaveWearLog, useWearLogs } from '@/hooks/outfits'
 import { useCoords, useRecommendation, useWeather } from '@/hooks/today'
 import { formatFull, todayISO } from '@/lib/date'
 import { describeWeather, LocateError, MANUAL_BANDS, skyColors } from '@/lib/weather'
+import { ItemThumb } from '@/components/ItemThumb'
 import s from './TodayView.module.css'
 
 const MANUAL_KEY = 'closetly.manualTemp'
@@ -145,7 +146,7 @@ export default function TodayView() {
                   {r.items.map((it) => (
                     <li key={it.id}>
                       <Link to={`/wardrobe/${it.id}`}>
-                        <img src={imageUrl(it.image_key, 'thumb')} alt="" />
+                        <ItemThumb item={it} />
                         <span>{itemTitle(it)}</span>
                       </Link>
                     </li>

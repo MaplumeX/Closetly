@@ -67,7 +67,7 @@ export default function ItemEditView() {
       <div className="page-head">
         <div>
           <h1>{editId ? '编辑衣物' : '添加衣物'}</h1>
-          {fromId && !next && <p>已复制「{source.data && itemTitle(source.data)}」的信息，请重新拍一张照片</p>}
+          {fromId && !next && <p>已复制「{source.data && itemTitle(source.data)}」的信息，照片没有复制，需要的话重新拍一张</p>}
           {next && <p className="msg-ok">已保存「{next.saved}」，继续录入下一件</p>}
         </div>
         <Link to={backTo} className="btn hide-mobile">取消</Link>

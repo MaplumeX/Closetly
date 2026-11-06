@@ -140,8 +140,9 @@ class Item(Base):
     slot: Mapped[Slot] = mapped_column(_str_enum(Slot))
     # 类型（二级分类），由用户自由填写，例如「牛仔裤」；同一用户同一部位下的相同文字视为同一类型
     kind: Mapped[str | None] = mapped_column(String(32))
-    # 图片文件名前缀，对应 images/<user_id>/<key>.webp 与 <key>_thumb.webp
-    image_key: Mapped[str] = mapped_column(String(64))
+    # 图片文件名前缀，对应 images/<user_id>/<key>.webp 与 <key>_thumb.webp；
+    # 照片选填，没有照片时前端按部位、类型和主色画占位剪影
+    image_key: Mapped[str | None] = mapped_column(String(64))
 
     name: Mapped[str | None] = mapped_column(String(128))
     seasons: Mapped[list[str]] = mapped_column(JSON, default=list)  # spring/summer/autumn/winter

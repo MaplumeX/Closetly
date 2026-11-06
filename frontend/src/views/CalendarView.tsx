@@ -1,8 +1,9 @@
 import { Link, useSearchParams } from 'react-router'
-import { errorText, imageUrl, itemTitle, outfitTitle, type ItemBrief, type WearLog } from '@/api'
+import { errorText, itemTitle, outfitTitle, type ItemBrief, type WearLog } from '@/api'
 import { confirmDialog } from '@/components/dialogs'
 import { useDeleteWearLog, useWearLogs } from '@/hooks/outfits'
 import { formatDay, monthGrid, monthOf, shiftMonth, todayISO } from '@/lib/date'
+import { ItemThumb } from '@/components/ItemThumb'
 import s from './CalendarView.module.css'
 
 const WEEK_HEAD = ['一', '二', '三', '四', '五', '六', '日']
@@ -72,7 +73,7 @@ export default function CalendarView() {
                 >
                   <span className={s.num}>{Number(d.slice(8))}</span>
                   <span className={s.thumbs}>
-                    {thumbs.map((it) => <img key={it.id} src={imageUrl(it.image_key, 'thumb')} alt="" loading="lazy" />)}
+                    {thumbs.map((it) => <ItemThumb key={it.id} item={it} detail={false} />)}
                   </span>
                 </button>
               )
@@ -101,7 +102,7 @@ export default function CalendarView() {
                 {log.items.map((it) => (
                   <li key={it.id}>
                     <Link to={`/wardrobe/${it.id}`} title={itemTitle(it)}>
-                      <img src={imageUrl(it.image_key, 'thumb')} alt={itemTitle(it)} />
+                      <ItemThumb item={it} alt={itemTitle(it)} detail={false} />
                     </Link>
                   </li>
                 ))}

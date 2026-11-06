@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { imageUrl, itemTitle, toBrief, type ItemBrief } from '@/api'
+import { itemTitle, toBrief, type ItemBrief } from '@/api'
 import { SLOTS, type Slot } from '@/constants'
 import { useItems } from '@/hooks/items'
 import { useDebounced } from '@/lib/useDebounced'
+import { ItemThumb } from './ItemThumb'
 import s from './ItemPicker.module.css'
 
 /** 从衣柜中挑选单品。上方是已选列表，下方是可按部位、关键词筛选的衣柜。 */
@@ -29,7 +30,7 @@ export function ItemPicker({ selected, onChange }: { selected: ItemBrief[]; onCh
           {selected.map((it) => (
             <li key={it.id}>
               <button type="button" className={s.trayItem} onClick={() => toggle(it)} aria-label={`移除 ${itemTitle(it)}`}>
-                <img src={imageUrl(it.image_key, 'thumb')} alt="" />
+                <ItemThumb item={it} detail={false} />
                 <span className={s.remove} aria-hidden="true">×</span>
               </button>
             </li>
@@ -52,7 +53,7 @@ export function ItemPicker({ selected, onChange }: { selected: ItemBrief[]; onCh
           {items.data?.map((it) => (
             <li key={it.id}>
               <button type="button" className={s.option} aria-pressed={selectedIds.has(it.id)} onClick={() => toggle(it)}>
-                <img src={imageUrl(it.image_key, 'thumb')} alt="" loading="lazy" />
+                <ItemThumb item={it} />
                 <span className={s.name}>{itemTitle(it)}</span>
                 <span className={s.check} aria-hidden="true">✓</span>
               </button>

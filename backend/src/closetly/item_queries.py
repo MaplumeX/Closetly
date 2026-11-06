@@ -19,7 +19,13 @@ def item_load_options():
 
 def item_brief(item: Item) -> ItemBrief:
     return ItemBrief(
-        id=item.id, image_key=item.image_key, name=item.name, slot=item.slot, kind=item.kind, status=item.status
+        id=item.id,
+        image_key=item.image_key,
+        name=item.name,
+        slot=item.slot,
+        kind=item.kind,
+        color=color_value(item),
+        status=item.status,
     )
 
 
