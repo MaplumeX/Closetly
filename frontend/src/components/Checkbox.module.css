@@ -1,0 +1,57 @@
+.root {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+.root[data-disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+/* 视觉上隐藏原生框，但保留可聚焦、可点击 */
+.input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.box {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid var(--ink-3);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--accent-ink);
+  transition: background 0.15s, border-color 0.15s;
+}
+.box svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.15s, transform 0.15s;
+}
+.root:hover .box {
+  border-color: var(--ink-2);
+}
+.input:checked + .box {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.input:checked + .box svg {
+  opacity: 1;
+  transform: none;
+}
+.input:focus-visible + .box {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
