@@ -231,3 +231,23 @@ class WearLogOut(BaseModel):
     notes: str | None
     items: list[ItemBrief]
     created_at: datetime
+
+
+# ---------- 今日推荐 ----------
+
+
+class BandOut(BaseModel):
+    label: str
+    min_warmth: int
+    max_warmth: int
+    need_outer: bool
+
+
+class RecommendationOut(BaseModel):
+    source: Literal["outfit", "generated", "empty"]
+    outfit_id: int | None
+    outfit_name: str | None
+    items: list[ItemBrief]
+    band: BandOut
+    season: Season
+    notes: list[str]

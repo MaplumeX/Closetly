@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
 import { errorText, toBrief, type ItemBrief, type Outfit } from '@/api'
 import { ItemPicker } from '@/components/ItemPicker'
 import { useItem } from '@/hooks/items'
@@ -9,6 +9,7 @@ import s from './OutfitEditView.module.css'
 /**
  * /outfits/new            新建
  * /outfits/new?with=:id   新建，并预选一件衣物（从衣物详情页「用它搭配」进入）
+ * 路由 state.preset        新建，并预选多件衣物（从今日推荐「存为搭配」进入）
  * /outfits/:id/edit       编辑
  */
 export default function OutfitEditView() {
@@ -18,9 +19,11 @@ export default function OutfitEditView() {
   const withId = id === null && withParam ? Number(withParam) : null
   const outfit = useOutfit(id)
   const preset = useItem(withId)
+  const statePreset = (useLocation().state as { preset?: ItemBrief[] } | null)?.preset
   if ((id !== null && outfit.isPending) || (withId !== null && preset.isPending)) return null
   if (outfit.isError) return <p className="msg-error">{errorText(outfit.error)}</p>
-  return <OutfitForm id={id} initial={outfit.data} preset={preset.data ? [toBrief(preset.data)] : []} />
+  const presetItems = statePreset?.map(toBrief) ?? (preset.data ? [toBrief(preset.data)] : [])
+  return <OutfitForm id={id} initial={outfit.data} preset={presetItems} />
 }
 
 function OutfitForm({ id, initial, preset }: { id: number | null; initial?: Outfit; preset: ItemBrief[] }) {

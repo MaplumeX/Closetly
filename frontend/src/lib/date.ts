@@ -29,6 +29,12 @@ export function formatDay(s: string, withWeekday = false): string {
   return withWeekday ? `${base} 周${WEEKDAYS[d.getDay()]}` : base
 }
 
+/** 11月6日 周五（不使用「今天」等相对说法） */
+export function formatFull(s: string): string {
+  const d = parseISO(s)
+  return `${d.getMonth() + 1}月${d.getDate()}日 周${WEEKDAYS[d.getDay()]}`
+}
+
 /** 'YYYY-MM' */
 export const monthOf = (s: string) => s.slice(0, 7)
 
