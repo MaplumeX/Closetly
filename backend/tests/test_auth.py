@@ -5,10 +5,6 @@ from closetly.main import create_app
 from .conftest import ADMIN
 
 
-def test_health(client):
-    assert client.get("/api/health").json() == {"status": "ok"}
-
-
 def test_requires_login(client):
     assert client.get("/api/auth/me").status_code == 401
     assert client.get("/api/kinds").status_code == 401

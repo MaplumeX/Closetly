@@ -1,7 +1,7 @@
 services:
   closetly:
-    build: .
-    image: closetly:latest
+    # 版本在 .env 中用 CLOSETLY_VERSION 固定；从源码构建见 docker-compose.build.yml
+    image: ghcr.io/maplumex/closetly:${CLOSETLY_VERSION:-latest}
     container_name: closetly
     restart: unless-stopped
     env_file: .env

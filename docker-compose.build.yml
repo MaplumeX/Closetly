@@ -1,0 +1,6 @@
+# 从本地源码构建镜像，代替拉取发布的镜像（开发或自行修改代码时使用）：
+#   docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
+services:
+  closetly:
+    build: .
+    image: closetly:local

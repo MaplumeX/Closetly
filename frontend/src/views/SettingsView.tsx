@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { api, errorText } from '@/api'
 import { useMe } from '@/auth'
@@ -10,6 +10,11 @@ const empty = { current: '', next: '', confirm: '' }
 
 export default function SettingsView() {
   const { data: user } = useMe()
+  const { data: health } = useQuery({
+    queryKey: ['health'],
+    queryFn: () => api<{ version: string }>('/api/health'),
+    staleTime: Infinity,
+  })
   const [form, setForm] = useState(empty)
   const [mismatch, setMismatch] = useState(false)
 
@@ -70,6 +75,8 @@ export default function SettingsView() {
         <KindManager />
         <ColorManager />
       </div>
+
+      {health && <p className={`muted ${s.version}`}>Closetly v{health.version}</p>}
     </div>
   )
 }

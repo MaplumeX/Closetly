@@ -1,5 +1,6 @@
 # ---- 前端构建 ----
-FROM node:22-alpine AS frontend
+# 产物是与架构无关的静态文件，固定在构建机的原生平台上运行，多架构构建时不必经过 QEMU 模拟
+FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend
 WORKDIR /app
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci

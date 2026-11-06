@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from . import __version__
 from .bootstrap import cleanup_orphan_images, ensure_admin, run_migrations
 from .config import Settings, get_settings
 from .db import make_engine, make_sessionmaker
@@ -37,14 +38,20 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def lifespan(app: FastAPI):
         settings.data_dir.mkdir(parents=True, exist_ok=True)
         settings.images_dir.mkdir(parents=True, exist_ok=True)
-        run_migrations(settings.database_url)
+        run_migrations(settings.database_url, backup_dir=settings.data_dir / "backups")
         with app.state.sessionmaker() as db:
             ensure_admin(db, settings)
             cleanup_orphan_images(db, app.state.image_store)
         yield
         app.state.engine.dispose()
 
-    app = FastAPI(title="Closetly", lifespan=lifespan, docs_url="/api/docs", openapi_url="/api/openapi.json")
+    app = FastAPI(
+        title="Closetly",
+        version=__version__,
+        lifespan=lifespan,
+        docs_url="/api/docs",
+        openapi_url="/api/openapi.json",
+    )
     app.state.settings = settings
     app.state.engine = make_engine(settings.database_url)
     app.state.sessionmaker = make_sessionmaker(app.state.engine)
@@ -58,7 +65,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/api/health", tags=["meta"])
     def health():
-        return {"status": "ok"}
+        return {"status": "ok", "version": __version__}
 
     app.include_router(auth.router)
     app.include_router(admin.router)
