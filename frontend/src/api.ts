@@ -76,7 +76,8 @@ export interface Item {
   slot: Slot
   /** 类型（二级分类），用户自由填写，可为空 */
   kind: string | null
-  image_key: string
+  /** 照片选填；没有照片时显示按部位、类型和主色生成的占位剪影 */
+  image_key: string | null
   name: string | null
   seasons: Season[]
   color: Color | null
@@ -132,14 +133,15 @@ export const imageUrl = (key: string, size: 'full' | 'thumb' = 'full') =>
 // ---------- 搭配与穿着记录 ----------
 
 /** 搭配、穿着记录里的精简单品信息 */
-export type ItemBrief = Pick<Item, 'id' | 'image_key' | 'name' | 'slot' | 'kind' | 'status'>
+export type ItemBrief = Pick<Item, 'id' | 'image_key' | 'name' | 'slot' | 'kind' | 'color' | 'status'>
 
-export const toBrief = ({ id, image_key, name, slot, kind, status }: ItemBrief): ItemBrief => ({
+export const toBrief = ({ id, image_key, name, slot, kind, color, status }: ItemBrief): ItemBrief => ({
   id,
   image_key,
   name,
   slot,
   kind,
+  color,
   status,
 })
 

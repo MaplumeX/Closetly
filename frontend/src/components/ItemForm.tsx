@@ -6,6 +6,7 @@ import { useAddColor, usePalette } from '@/hooks/colors'
 import { useKinds, useTags } from '@/hooks/items'
 import { ChipGroup, ChipSelect, ColorSwatches } from './Chips'
 import { DateInput } from './DateInput'
+import { ItemThumb } from './ItemThumb'
 import { KindInput } from './KindInput'
 import { PhotoPicker } from './PhotoPicker'
 import { Select } from './Select'
@@ -16,7 +17,6 @@ const PRICE_RE = /^\d{1,7}(\.\d{1,2})?$/
 
 function validate(d: Draft): string[] {
   const p: string[] = []
-  if (!d.image_key) p.push('请添加照片')
   if (!d.slot) p.push('请选择部位')
   if (!d.seasons.length) p.push('请至少选择一个季节')
   if (d.price.trim() && !PRICE_RE.test(d.price.trim())) p.push('价格格式不正确')
@@ -71,7 +71,10 @@ export function ItemForm({
   return (
     <form className={s.form} onSubmit={submit} noValidate>
       <div className={s.photo}>
-        <PhotoPicker value={d.image_key} onChange={(k) => set('image_key', k)} />
+        <PhotoPicker value={d.image_key} onChange={(k) => set('image_key', k)}
+          fallback={d.slot && (
+            <ItemThumb item={{ image_key: null, slot: d.slot, kind: d.kind, name: d.name, color: d.color }} />
+          )} />
       </div>
 
       <div className={s.fields}>

@@ -87,5 +87,9 @@ export const router = createBrowserRouter([
       },
     ],
   },
+  // 开发用原型页，生产构建里不会注册
+  ...(import.meta.env.DEV
+    ? [{ path: '/dev/placeholders', lazy: page(() => import('./views/PlaceholderLabView')) }]
+    : []),
   { path: '*', element: <Navigate to="/" replace /> },
 ])

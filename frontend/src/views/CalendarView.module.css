@@ -49,7 +49,7 @@
   background: transparent;
   color: var(--ink-3);
 }
-.day[data-outside] img {
+.day[data-outside] [data-thumb] {
   opacity: 0.5;
 }
 .day[aria-selected='true'] {
@@ -73,8 +73,9 @@
   gap: 3px;
   min-width: 0;
 }
-.thumbs img {
+.thumbs [data-thumb] {
   width: calc((100% - 6px) / 3);
+  height: auto;
   max-width: 34px;
   aspect-ratio: 3 / 4;
   object-fit: cover;
@@ -125,7 +126,7 @@
   flex-wrap: wrap;
   gap: 6px;
 }
-.logItems img {
+.logItems [data-thumb] {
   display: block;
   width: 52px;
   height: 68px;
@@ -159,11 +160,11 @@
     align-items: center;
   }
   /* 手机上每天只显示一张缩略图 */
-  .thumbs img {
+  .thumbs [data-thumb] {
     width: 100%;
     max-width: 30px;
   }
-  .thumbs img:nth-child(n + 2) {
+  .thumbs [data-thumb]:nth-child(n + 2) {
     display: none;
   }
   .nav h2 {

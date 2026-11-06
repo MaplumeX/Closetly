@@ -61,7 +61,7 @@ export function itemToDraft(item: Item, withImage = true): Draft {
 export function toInput(d: Draft): ItemInput {
   const orNull = (v: string) => v.trim() || null
   return {
-    image_key: d.image_key!,
+    image_key: d.image_key,
     slot: d.slot!,
     kind: orNull(d.kind),
     seasons: d.seasons,
