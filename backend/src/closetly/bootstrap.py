@@ -9,7 +9,8 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from .config import Settings
-from .models import Category, Slot, User
+from .images import ImageStore
+from .models import Category, Item, Slot, User
 from .security import hash_password
 
 log = logging.getLogger("closetly")
@@ -63,3 +64,11 @@ def ensure_admin(db: Session, settings: Settings) -> None:
     )
     db.commit()
     log.info("已创建管理员账号 %s", settings.admin_username)
+
+
+def cleanup_orphan_images(db: Session, store: ImageStore) -> None:
+    referenced: dict[int, set[str]] = {}
+    for user_id, key in db.execute(select(Item.user_id, Item.image_key)):
+        referenced.setdefault(user_id, set()).add(key)
+    if removed := store.cleanup_orphans(referenced):
+        log.info("已清理 %d 个未被使用的图片文件", removed)

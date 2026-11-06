@@ -20,11 +20,18 @@ export function AppLayout() {
   const logout = useLogout()
   const navigate = useNavigate()
   const matches = useMatches()
-  const title = (matches.at(-1)?.handle as RouteHandle | undefined)?.title
+  const handle = matches.at(-1)?.handle as RouteHandle | undefined
+  const title = handle?.title
 
   useEffect(() => {
     document.title = title ? `${title} · Closetly` : 'Closetly'
   }, [title])
+
+  function goBack() {
+    // 应用内有历史记录时返回上一页；直接打开的深链接则回到默认页面
+    if ((window.history.state?.idx ?? 0) > 0) navigate(-1)
+    else navigate(handle?.back ?? '/', { replace: true })
+  }
 
   async function onLogout() {
     await logout.mutateAsync()
@@ -63,6 +70,12 @@ export function AppLayout() {
       </aside>
 
       <header className={s.topbar}>
+        {handle?.back && (
+          <button className={s.iconBtn} onClick={goBack} aria-label="返回">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8"
+              strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
+          </button>
+        )}
         <span className={s.topbarTitle}>{title ?? 'Closetly'}</span>
         <Link to="/settings" className={s.iconBtn} aria-label="设置">
           <NavIcon name="settings" />

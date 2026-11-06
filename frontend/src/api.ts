@@ -1,3 +1,5 @@
+import type { Color, ItemStatus, Occasion, Season } from './constants'
+
 export class ApiError extends Error {
   status: number
 
@@ -66,3 +68,50 @@ export interface User {
 export function errorText(e: unknown): string {
   return e instanceof ApiError ? e.message : '网络错误，请稍后再试'
 }
+
+// ---------- 衣物 ----------
+
+export interface Category {
+  id: number
+  name: string
+  slot: string | null
+  children: Category[]
+}
+
+export interface Item {
+  id: number
+  category_id: number
+  category_path: string
+  slot: string | null
+  image_key: string
+  name: string | null
+  seasons: Season[]
+  color: Color | null
+  occasions: Occasion[]
+  warmth: number | null
+  brand: string | null
+  price: number | null
+  purchase_date: string | null
+  location: string | null
+  notes: string | null
+  status: ItemStatus
+  tags: string[]
+  created_at: string
+  updated_at: string
+}
+
+/** 创建/更新衣物时提交的字段 */
+export type ItemInput = Omit<Item, 'id' | 'category_path' | 'slot' | 'created_at' | 'updated_at' | 'price'> & {
+  price: string | null
+}
+
+export interface TagCount {
+  name: string
+  count: number
+}
+
+export const imageUrl = (key: string, size: 'full' | 'thumb' = 'full') =>
+  `/api/images/${key}${size === 'thumb' ? '?size=thumb' : ''}`
+
+export const itemTitle = (item: Pick<Item, 'name' | 'category_path'>) =>
+  item.name || item.category_path.split(' / ').at(-1)!

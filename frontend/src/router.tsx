@@ -5,6 +5,8 @@ import { PublicOnly, RequireAdmin, RequireAuth } from './components/guards'
 
 export interface RouteHandle {
   title?: string
+  /** 移动端顶栏显示返回按钮；值是没有浏览历史时的默认返回地址 */
+  back?: string
 }
 
 /** 按页面拆包：路由第一次访问时才加载对应的页面代码 */
@@ -27,6 +29,21 @@ export const router = createBrowserRouter([
     children: [
       { index: true, lazy: page(() => import('./views/TodayView')), handle: { title: '今日' } },
       { path: 'wardrobe', lazy: page(() => import('./views/WardrobeView')), handle: { title: '衣柜' } },
+      {
+        path: 'wardrobe/new',
+        lazy: page(() => import('./views/ItemEditView')),
+        handle: { title: '添加衣物', back: '/wardrobe' },
+      },
+      {
+        path: 'wardrobe/:id',
+        lazy: page(() => import('./views/ItemDetailView')),
+        handle: { title: '衣物详情', back: '/wardrobe' },
+      },
+      {
+        path: 'wardrobe/:id/edit',
+        lazy: page(() => import('./views/ItemEditView')),
+        handle: { title: '编辑衣物', back: '/wardrobe' },
+      },
       { path: 'outfits', lazy: page(() => import('./views/OutfitsView')), handle: { title: '搭配' } },
       { path: 'calendar', lazy: page(() => import('./views/CalendarView')), handle: { title: '穿着记录' } },
       { path: 'settings', lazy: page(() => import('./views/SettingsView')), handle: { title: '设置' } },

@@ -1,0 +1,70 @@
+.form {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+.photo {
+  position: sticky;
+  top: 24px;
+}
+.fields {
+  display: grid;
+  gap: 28px;
+  max-width: 620px;
+}
+.section {
+  display: grid;
+  gap: 18px;
+}
+.section h2 {
+  font-size: 17px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 16px;
+}
+.req {
+  color: var(--accent);
+  font-style: normal;
+}
+.hint {
+  margin-left: 8px;
+  color: var(--ink-3);
+  font-size: 12px;
+}
+.problems {
+  display: grid;
+  gap: 4px;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.actions :global(.btn) {
+  min-height: 44px;
+}
+
+@media (max-width: 900px) {
+  .form {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .photo {
+    position: static;
+    width: min(260px, 70%);
+    margin: 0 auto;
+  }
+}
+@media (max-width: 480px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+  .actions :global(.btn) {
+    flex: 1;
+  }
+}

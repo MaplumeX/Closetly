@@ -6,11 +6,12 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from .bootstrap import ensure_admin, run_migrations, seed_categories
+from .bootstrap import cleanup_orphan_images, ensure_admin, run_migrations, seed_categories
 from .config import Settings, get_settings
 from .db import make_engine, make_sessionmaker
 from .ratelimit import LoginRateLimiter
-from .routers import admin, auth, categories
+from .images import ImageStore
+from .routers import admin, auth, categories, images, items
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 
@@ -40,6 +41,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         with app.state.sessionmaker() as db:
             seed_categories(db)
             ensure_admin(db, settings)
+            cleanup_orphan_images(db, app.state.image_store)
         yield
         app.state.engine.dispose()
 
@@ -47,6 +49,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = settings
     app.state.engine = make_engine(settings.database_url)
     app.state.sessionmaker = make_sessionmaker(app.state.engine)
+    app.state.image_store = ImageStore(settings.images_dir)
     app.state.login_limiter = LoginRateLimiter(
         settings.login_max_failures, settings.login_window_seconds
     )
@@ -58,6 +61,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(auth.router)
     app.include_router(admin.router)
     app.include_router(categories.router)
+    app.include_router(images.router)
+    app.include_router(items.router)
 
     static_dir: Path | None = settings.static_dir
     if static_dir and (static_dir / "index.html").is_file():

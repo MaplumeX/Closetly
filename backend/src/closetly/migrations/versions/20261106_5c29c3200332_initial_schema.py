@@ -55,7 +55,7 @@ def upgrade() -> None:
     sa.Column('occasions', sa.JSON(), nullable=False),
     sa.Column('warmth', sa.Integer(), nullable=True),
     sa.Column('brand', sa.String(length=128), nullable=True),
-    sa.Column('price', sa.Numeric(precision=10, scale=2), nullable=True),
+    sa.Column('price_cents', sa.Integer(), nullable=True),
     sa.Column('purchase_date', sa.Date(), nullable=True),
     sa.Column('location', sa.String(length=128), nullable=True),
     sa.Column('notes', sa.Text(), nullable=True),

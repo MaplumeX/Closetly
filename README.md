@@ -22,6 +22,12 @@ closet.example.com {
 }
 ```
 
+照片上传前会在浏览器里压缩，但单个请求仍可能超过 1MB。**Nginx 默认的请求体上限只有 1MB**，请调大：
+
+```nginx
+client_max_body_size 20m;
+```
+
 如果反向代理也运行在 Docker 中，可以去掉 `docker-compose.yml` 里的 `ports`，改为把容器加入代理所在的网络。
 
 注意：

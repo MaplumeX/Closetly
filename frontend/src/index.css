@@ -118,6 +118,7 @@ a:focus-visible {
   color: var(--ink);
   cursor: pointer;
   white-space: nowrap;
+  text-decoration: none;
 }
 .btn:hover {
   background: var(--surface-2);
@@ -178,4 +179,11 @@ a:focus-visible {
 .page-head p {
   margin: 4px 0 0;
   color: var(--ink-2);
+}
+
+/* 移动端顶栏已有返回按钮时，隐藏页面里重复的操作 */
+@media (max-width: 767px) {
+  .hide-mobile {
+    display: none !important;
+  }
 }

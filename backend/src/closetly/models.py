@@ -1,6 +1,5 @@
 import enum
 from datetime import date, datetime
-from decimal import Decimal
 
 from sqlalchemy import (
     JSON,
@@ -10,7 +9,6 @@ from sqlalchemy import (
     Enum,
     ForeignKey,
     Integer,
-    Numeric,
     String,
     Table,
     Text,
@@ -81,7 +79,10 @@ class Category(Base):
     slot: Mapped[Slot | None] = mapped_column(_str_enum(Slot))
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
 
-    children: Mapped[list["Category"]] = relationship(order_by="Category.sort_order")
+    children: Mapped[list["Category"]] = relationship(
+        back_populates="parent", order_by="Category.sort_order"
+    )
+    parent: Mapped["Category | None"] = relationship(back_populates="children", remote_side=[id])
 
 
 item_tags = Table(
@@ -131,7 +132,7 @@ class Item(Base):
     occasions: Mapped[list[str]] = mapped_column(JSON, default=list)
     warmth: Mapped[int | None] = mapped_column(Integer)  # 1–5
     brand: Mapped[str | None] = mapped_column(String(128))
-    price: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
+    price_cents: Mapped[int | None] = mapped_column(Integer)  # 以分为单位，避免浮点误差
     purchase_date: Mapped[date | None] = mapped_column(Date)
     location: Mapped[str | None] = mapped_column(String(128))
     notes: Mapped[str | None] = mapped_column(Text)
