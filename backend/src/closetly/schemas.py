@@ -59,10 +59,17 @@ class ResetPasswordIn(BaseModel):
 
 Season = Literal["spring", "summer", "autumn", "winter"]
 Occasion = Literal["commute", "casual", "sport", "formal"]
-Color = Literal[
+PresetColor = Literal[
     "black", "white", "gray", "beige", "brown", "red", "pink", "orange",
     "yellow", "green", "blue", "navy", "purple", "multi",
 ]  # fmt: skip
+# 预设色的中文名，自定义颜色不能与之重名，免得色板里出现两个「红」
+PRESET_COLOR_LABELS = frozenset(
+    ["黑", "白", "灰", "米", "棕", "红", "粉", "橙", "黄", "绿", "蓝", "藏青", "紫", "多色"]
+)
+CUSTOM_COLOR_PREFIX = "custom:"
+# 主色：预设色的值，或 "custom:<id>" 表示当前用户的一个自定义颜色
+Color = Annotated[str, StringConstraints(pattern=r"^(" + "|".join(PresetColor.__args__) + r"|custom:\d{1,9})$")]
 
 
 def _blank_to_none(v: object) -> object:
@@ -137,7 +144,7 @@ class ItemOut(BaseModel):
     image_key: str
     name: str | None
     seasons: list[Season]
-    color: Color | None
+    color: str | None
     occasions: list[Occasion]
     warmth: int | None
     brand: str | None
@@ -171,6 +178,29 @@ class KindRenameIn(BaseModel):
     slot: Slot
     name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=32)]
     new_name: KindName = None
+
+
+HexColor = Annotated[
+    str, StringConstraints(strip_whitespace=True, to_lower=True, pattern=r"^#[0-9a-fA-F]{6}$")
+]
+ColorName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=16)]
+
+
+class CustomColorIn(BaseModel):
+    name: ColorName
+    hex: HexColor
+
+
+class CustomColorUpdateIn(BaseModel):
+    name: ColorName | None = None
+    hex: HexColor | None = None
+
+
+class CustomColorOut(BaseModel):
+    id: int
+    name: str
+    hex: str
+    count: int  # 使用这个颜色的衣物数量（含已淘汰）
 
 
 class ImageOut(BaseModel):

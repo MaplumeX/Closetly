@@ -20,9 +20,25 @@ interface PromptOptions {
   validate?: (v: string) => string | null
 }
 
+interface ColorOptions {
+  title: string
+  message?: string
+  defaultName?: string
+  /** #rrggbb */
+  defaultHex?: string
+  confirmText?: string
+  /** 校验名称，返回错误文案表示不通过 */
+  validate?: (name: string) => string | null
+}
+export interface ColorResult {
+  name: string
+  hex: string
+}
+
 export type Request = { id: number } & (
   | ({ kind: 'confirm'; resolve: (v: boolean) => void } & ConfirmOptions)
   | ({ kind: 'prompt'; resolve: (v: string | null) => void } & PromptOptions)
+  | ({ kind: 'color'; resolve: (v: ColorResult | null) => void } & ColorOptions)
 )
 type NewRequest = Request extends infer R ? (R extends Request ? Omit<R, 'id'> : never) : never
 
@@ -51,5 +67,9 @@ export const confirmDialog = (o: ConfirmOptions) =>
 /** 替代 window.prompt，取消返回 null */
 export const promptDialog = (o: PromptOptions) =>
   new Promise<string | null>((resolve) => enqueue({ kind: 'prompt', resolve, ...o }))
+
+/** 填写颜色名称并选取色值，取消返回 null */
+export const colorDialog = (o: ColorOptions) =>
+  new Promise<ColorResult | null>((resolve) => enqueue({ kind: 'color', resolve, ...o }))
 
 export const currentRequest = () => queue[0]

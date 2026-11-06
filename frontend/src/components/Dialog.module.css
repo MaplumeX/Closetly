@@ -82,3 +82,37 @@
     transform: translateY(100%);
   }
 }
+
+/* 颜色对话框：左边色块，右边名称 */
+.colorRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+.colorName {
+  flex: 1;
+  min-width: 0;
+}
+.colorPick {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 28%, transparent);
+}
+.colorPick::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.colorPick::-webkit-color-swatch {
+  border: 0;
+  border-radius: 50%;
+}
+.colorPick::-moz-color-swatch {
+  border: 0;
+  border-radius: 50%;
+}

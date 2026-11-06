@@ -6,8 +6,8 @@ from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
-from .models import Item, Slot, WearLog, wear_log_items
-from .schemas import ItemBrief
+from .models import CustomColor, Item, Slot, WearLog, wear_log_items
+from .schemas import CUSTOM_COLOR_PREFIX, ItemBrief
 
 # 展示一套搭配时的单品顺序：从外到内、从上到下
 SLOT_ORDER = {Slot.OUTER: 0, Slot.ONEPIECE: 1, Slot.TOP: 2, Slot.BOTTOM: 3, Slot.SHOES: 4, Slot.ACCESSORY: 5}
@@ -55,3 +55,20 @@ def wear_stats(db: Session, user_id: int, item_ids: list[int] | None = None) -> 
     if item_ids is not None:
         q = q.where(wear_log_items.c.item_id.in_(item_ids))
     return {item_id: (count, last) for item_id, count, last in db.execute(q)}
+
+
+def color_value(item: Item) -> str | None:
+    """衣物的主色，对外统一成一个字符串。"""
+    if item.custom_color_id is not None:
+        return f"{CUSTOM_COLOR_PREFIX}{item.custom_color_id}"
+    return item.color
+
+
+def resolve_color(db: Session, user_id: int, value: str | None) -> dict[str, str | int | None]:
+    """把接口里的 color 拆成数据库的两列；自定义颜色必须属于当前用户。"""
+    if value is None or not value.startswith(CUSTOM_COLOR_PREFIX):
+        return {"color": value, "custom_color_id": None}
+    color_id = int(value.removeprefix(CUSTOM_COLOR_PREFIX))
+    if not db.scalar(select(CustomColor.id).where(CustomColor.id == color_id, CustomColor.user_id == user_id)):
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "这个颜色不存在，请刷新后重试")
+    return {"color": None, "custom_color_id": color_id}

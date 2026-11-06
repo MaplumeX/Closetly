@@ -8,9 +8,10 @@ from sqlalchemy.orm import Session
 
 from ..deps import CurrentUserDep, DbDep
 from ..images import ImageStore
-from ..item_queries import item_load_options, wear_stats
+from ..item_queries import color_value, item_load_options, resolve_color, wear_stats
 from ..models import Item, ItemStatus, Slot, Tag, item_tags
 from ..schemas import (
+    CUSTOM_COLOR_PREFIX,
     Color,
     ItemCreateIn,
     ItemOut,
@@ -34,7 +35,7 @@ def item_out(item: Item, stats: tuple[int, date] | None = None) -> ItemOut:
         image_key=item.image_key,
         name=item.name,
         seasons=item.seasons,
-        color=item.color,
+        color=color_value(item),
         occasions=item.occasions,
         warmth=item.warmth,
         brand=item.brand,
@@ -125,7 +126,9 @@ def list_items(
     if occasion:
         stmt = stmt.where(_json_has_any(Item.occasions, occasion))
     if color:
-        stmt = stmt.where(Item.color.in_(color))
+        presets = [c for c in color if not c.startswith(CUSTOM_COLOR_PREFIX)]
+        custom_ids = [int(c.removeprefix(CUSTOM_COLOR_PREFIX)) for c in color if c.startswith(CUSTOM_COLOR_PREFIX)]
+        stmt = stmt.where(or_(Item.color.in_(presets), Item.custom_color_id.in_(custom_ids)))
     stmt = stmt.where(Item.status.in_(item_status) if item_status else Item.status != ItemStatus.RETIRED)
     if tag:
         stmt = stmt.where(Item.tags.any(Tag.name.in_(tag)))
@@ -148,8 +151,10 @@ def list_items(
 @router.post("/items", response_model=ItemOut, status_code=status.HTTP_201_CREATED)
 def create_item(body: ItemCreateIn, request: Request, user: CurrentUserDep, db: DbDep):
     _check_image(db, request.app.state.image_store, user.id, body.image_key)
-    data = body.model_dump(exclude={"tags", "price"})
-    item = Item(user_id=user.id, price_cents=_to_cents(body.price), **data)
+    data = body.model_dump(exclude={"tags", "price", "color"})
+    item = Item(
+        user_id=user.id, price_cents=_to_cents(body.price), **resolve_color(db, user.id, body.color), **data
+    )
     item.tags = _resolve_tags(db, user.id, body.tags)
     db.add(item)
     db.commit()
@@ -181,6 +186,8 @@ def update_item(item_id: int, body: ItemUpdateIn, request: Request, user: Curren
     if "price" in changes:
         item.price_cents = _to_cents(body.price)
         changes.pop("price")
+    if "color" in changes:
+        changes.update(resolve_color(db, user.id, changes.pop("color")))
     for k, v in changes.items():
         setattr(item, k, v)
     db.commit()

@@ -62,3 +62,25 @@
   color: var(--ink);
   font-weight: 500;
 }
+/* 自定义颜色的名字可能较长，一行放不下就省略 */
+.swatchLabel {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.addDot {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px dashed var(--ink-3);
+  font-size: 13px;
+  line-height: 1;
+  color: var(--ink-3);
+}
+.swatch:hover .addDot {
+  border-color: var(--ink);
+  color: var(--ink);
+}
