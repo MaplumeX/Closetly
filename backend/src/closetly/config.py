@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     login_max_failures: int = 5
     login_window_seconds: int = 15 * 60
 
+    # 开放注册时，同一 IP 在时间窗口内最多注册几个账号
+    register_max_per_ip: int = 3
+    register_window_seconds: int = 60 * 60
+
     @property
     def database_url(self) -> str:
         return f"sqlite:///{self.data_dir / 'closetly.db'}"

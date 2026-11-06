@@ -55,3 +55,11 @@
 .create h2 {
   font-size: 18px;
 }
+.side {
+  display: grid;
+  gap: 20px;
+}
+.create p {
+  font-size: 14px;
+  margin-top: -8px;
+}

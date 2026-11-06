@@ -52,6 +52,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.login_limiter = LoginRateLimiter(
         settings.login_max_failures, settings.login_window_seconds
     )
+    app.state.register_limiter = LoginRateLimiter(
+        settings.register_max_per_ip, settings.register_window_seconds
+    )
 
     @app.get("/api/health", tags=["meta"])
     def health():

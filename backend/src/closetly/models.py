@@ -1,5 +1,6 @@
 import enum
 from datetime import date, datetime
+from typing import Any
 
 from sqlalchemy import (
     JSON,
@@ -62,6 +63,15 @@ class User(Base):
     is_admin: Mapped[bool] = mapped_column(default=False)
     is_active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class AppSetting(Base):
+    """全站设置（键值对），由管理员在网页上修改。读写见 site_settings.py。"""
+
+    __tablename__ = "app_settings"
+
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    value: Mapped[Any] = mapped_column(JSON)
 
 
 class UserSession(Base):

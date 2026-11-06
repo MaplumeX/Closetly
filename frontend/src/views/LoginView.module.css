@@ -27,3 +27,11 @@
   margin-top: 8px;
   min-height: 44px;
 }
+.switch {
+  text-align: center;
+  font-size: 14px;
+}
+.switch a {
+  color: var(--accent);
+  font-weight: 600;
+}
