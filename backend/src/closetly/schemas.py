@@ -25,6 +25,11 @@ class LoginIn(BaseModel):
     password: str
 
 
+class RegisterIn(BaseModel):
+    username: Username
+    password: NewPassword
+
+
 class ChangePasswordIn(BaseModel):
     current_password: str
     new_password: NewPassword
@@ -53,6 +58,16 @@ class UserUpdateIn(BaseModel):
 
 class ResetPasswordIn(BaseModel):
     password: NewPassword
+
+
+class AuthConfigOut(BaseModel):
+    """未登录也能读取的公开配置，登录页据此决定是否显示注册入口。"""
+
+    registration_open: bool
+
+
+class SiteSettingsUpdateIn(BaseModel):
+    registration_open: bool | None = None
 
 
 # ---------- 衣物 ----------

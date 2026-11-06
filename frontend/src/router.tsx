@@ -17,7 +17,10 @@ const page = (load: () => Promise<{ default: ComponentType }>) => async () => ({
 export const router = createBrowserRouter([
   {
     element: <PublicOnly />,
-    children: [{ path: '/login', lazy: page(() => import('./views/LoginView')) }],
+    children: [
+      { path: '/login', lazy: page(() => import('./views/LoginView')) },
+      { path: '/register', lazy: page(() => import('./views/RegisterView')) },
+    ],
   },
   {
     path: '/',

@@ -1,10 +1,13 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { Link, useLocation } from 'react-router'
 import { errorText } from '@/api'
-import { useLogin } from '@/auth'
+import { useAuthConfig, useLogin } from '@/auth'
 import s from './LoginView.module.css'
 
 export default function LoginView() {
   const login = useLogin()
+  const { data: config } = useAuthConfig()
+  const { search } = useLocation()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
@@ -37,6 +40,11 @@ export default function LoginView() {
         <button className={`btn btn-primary ${s.submit}`} disabled={login.isPending}>
           {login.isPending ? '登录中…' : '登录'}
         </button>
+        {config?.registration_open && (
+          <p className={`muted ${s.switch}`}>
+            还没有账号？<Link to={`/register${search}`}>注册</Link>
+          </p>
+        )}
       </form>
     </div>
   )

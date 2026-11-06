@@ -26,6 +26,29 @@ export function useLogin() {
   })
 }
 
+export interface AuthConfig {
+  registration_open: boolean
+}
+
+export const AUTH_CONFIG_KEY = ['auth', 'config'] as const
+
+/** 公开配置（是否开放注册），未登录也能读取 */
+export function useAuthConfig() {
+  return useQuery({
+    queryKey: AUTH_CONFIG_KEY,
+    queryFn: () => api<AuthConfig>('/api/auth/config', { skipAuthRedirect: true }),
+  })
+}
+
+/** 注册成功后直接处于登录状态 */
+export function useRegister() {
+  return useMutation({
+    mutationFn: (body: { username: string; password: string }) =>
+      api<User>('/api/auth/register', { method: 'POST', body, skipAuthRedirect: true }),
+    onSuccess: (user) => queryClient.setQueryData(ME_KEY, user),
+  })
+}
+
 export function useLogout() {
   return useMutation({
     mutationFn: () => api('/api/auth/logout', { method: 'POST', skipAuthRedirect: true }),

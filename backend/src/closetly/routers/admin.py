@@ -1,10 +1,12 @@
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import delete, select
 
+from ..accounts import create_user as create_account
 from ..deps import AdminDep, DbDep
 from ..models import User, UserSession
-from ..schemas import ResetPasswordIn, UserCreateIn, UserOut, UserUpdateIn
+from ..schemas import ResetPasswordIn, SiteSettingsUpdateIn, UserCreateIn, UserOut, UserUpdateIn
 from ..security import hash_password
+from ..site_settings import SiteSettings, load_site_settings, save_site_settings
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -23,14 +25,7 @@ def list_users(_: AdminDep, db: DbDep):
 
 @router.post("/users", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 def create_user(body: UserCreateIn, _: AdminDep, db: DbDep):
-    if db.scalar(select(User).where(User.username == body.username)):
-        raise HTTPException(status.HTTP_409_CONFLICT, "用户名已存在")
-    user = User(
-        username=body.username, password_hash=hash_password(body.password), is_admin=body.is_admin
-    )
-    db.add(user)
-    db.commit()
-    return user
+    return create_account(db, body.username, body.password, is_admin=body.is_admin)
 
 
 @router.patch("/users/{user_id}", response_model=UserOut)
@@ -54,3 +49,15 @@ def reset_password(user_id: int, body: ResetPasswordIn, _: AdminDep, db: DbDep):
     user.password_hash = hash_password(body.password)
     db.execute(delete(UserSession).where(UserSession.user_id == user.id))
     db.commit()
+
+
+@router.get("/settings", response_model=SiteSettings)
+def get_site_settings(_: AdminDep, db: DbDep):
+    return load_site_settings(db)
+
+
+@router.patch("/settings", response_model=SiteSettings)
+def update_site_settings(body: SiteSettingsUpdateIn, _: AdminDep, db: DbDep):
+    updated = save_site_settings(db, **body.model_dump())
+    db.commit()
+    return updated
