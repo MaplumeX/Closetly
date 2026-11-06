@@ -203,6 +203,31 @@
   color: var(--ink-2);
 }
 
+/* 内容区够宽时分两栏：左边天气和筛选（随页面滚动时停住），右边推荐结果 */
+@container content (min-width: 820px) {
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(340px, 400px) minmax(0, 1fr);
+    gap: 48px;
+    align-items: start;
+  }
+  .side {
+    position: sticky;
+    top: 24px;
+  }
+  .occasion {
+    margin-bottom: 0;
+  }
+  .items {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+    max-width: none;
+  }
+  .why {
+    max-width: none;
+  }
+}
+
 @media (min-width: 768px) {
   .sky {
     padding: 28px 32px 52px;

@@ -140,7 +140,7 @@
   white-space: pre-wrap;
 }
 
-@media (max-width: 1000px) {
+@container content (max-width: 760px) {
   .layout {
     grid-template-columns: 1fr;
     gap: 24px;

@@ -72,104 +72,110 @@ export default function TodayView() {
         <h1>今日推荐</h1>
       </div>
 
-      <section className={s.sky} style={{ '--sky-a': skyA, '--sky-b': skyB } as CSSProperties} aria-label="天气">
-        <WeatherSummary
-          date={formatFull(today)}
-          loading={coords.isPending || (coords.isSuccess && weather.isPending)}
-          weather={weather.data}
-          error={coords.error ?? weather.error}
-          usingManual={usingManual}
-          manualBand={manualBand}
-          temperature={temperature}
-          bandLabel={r?.band.label}
-          warmth={r ? `${r.band.min_warmth}–${r.band.max_warmth}` : null}
-        />
-      </section>
+      <div className={s.layout}>
+        <div className={s.side}>
+          <section className={s.sky} style={{ '--sky-a': skyA, '--sky-b': skyB } as CSSProperties} aria-label="天气">
+            <WeatherSummary
+              date={formatFull(today)}
+              loading={coords.isPending || (coords.isSuccess && weather.isPending)}
+              weather={weather.data}
+              error={coords.error ?? weather.error}
+              usingManual={usingManual}
+              manualBand={manualBand}
+              temperature={temperature}
+              bandLabel={r?.band.label}
+              warmth={r ? `${r.band.min_warmth}–${r.band.max_warmth}` : null}
+            />
+          </section>
 
-      <div className={s.bands} role="group" aria-label="气温档位">
-        {MANUAL_BANDS.map((b) => (
-          <button key={b.value} type="button" className={s.band}
-            aria-pressed={usingManual && temperature === b.value} onClick={() => chooseManual(b.value)}>
-            {b.label}
-            <small>{b.hint}</small>
-          </button>
-        ))}
-      </div>
-      <div className={s.bandFoot}>
-        <span>{weather.data ? '觉得冷热不对，可以手动选一个档位' : '选择今天的气温'}</span>
-        {manual !== null && weather.data && (
-          <button className="btn btn-sm" onClick={() => chooseManual(null)}>使用实时天气</button>
-        )}
-        {coords.isError && (coords.error as LocateError).kind !== 'unsupported' && (
-          <button className="btn btn-sm" onClick={() => setLocateAttempt((n) => n + 1)}>重新定位</button>
-        )}
-      </div>
-
-      <div className={s.occasion}>
-        <span className="muted">场合</span>
-        <ChipSelect label="场合" options={OCCASIONS} value={occasion} onChange={(v) => { setOccasion(v); setSeed(0) }} />
-      </div>
-
-      {loggedCount > 0 && (
-        <p className={s.logged}>
-          今天已经记录了 {loggedCount} 条穿着。<Link to="/calendar">查看</Link>
-        </p>
-      )}
-
-      <section className={s.rec} aria-live="polite" aria-busy={rec.isFetching}>
-        {rec.isError && <p className="msg-error">{errorText(rec.error)}</p>}
-        {!r && !rec.isError && <p className="muted">{temperature === null ? '正在获取天气…' : '正在挑选…'}</p>}
-        {r && r.source === 'empty' && (
-          <div className={s.empty}>
-            <p>暂时凑不出一套。</p>
-            <ul>{r.notes.map((n) => <li key={n}>{n}</li>)}</ul>
-            <Link to="/wardrobe/new" className="btn btn-primary">去添加衣物</Link>
+          <div className={s.bands} role="group" aria-label="气温档位">
+            {MANUAL_BANDS.map((b) => (
+              <button key={b.value} type="button" className={s.band}
+                aria-pressed={usingManual && temperature === b.value} onClick={() => chooseManual(b.value)}>
+                {b.label}
+                <small>{b.hint}</small>
+              </button>
+            ))}
           </div>
-        )}
-        {r && r.source !== 'empty' && (
-          <>
-            <div className={s.recHead}>
-              <h2>
-                {r.source === 'outfit' && r.outfit_id ? (
-                  <>来自搭配 <Link to={`/outfits/${r.outfit_id}`}>「{outfitTitle({ name: r.outfit_name })}」</Link></>
-                ) : (
-                  '为你组合了一套'
+          <div className={s.bandFoot}>
+            <span>{weather.data ? '觉得冷热不对，可以手动选一个档位' : '选择今天的气温'}</span>
+            {manual !== null && weather.data && (
+              <button className="btn btn-sm" onClick={() => chooseManual(null)}>使用实时天气</button>
+            )}
+            {coords.isError && (coords.error as LocateError).kind !== 'unsupported' && (
+              <button className="btn btn-sm" onClick={() => setLocateAttempt((n) => n + 1)}>重新定位</button>
+            )}
+          </div>
+
+          <div className={s.occasion}>
+            <span className="muted">场合</span>
+            <ChipSelect label="场合" options={OCCASIONS} value={occasion} onChange={(v) => { setOccasion(v); setSeed(0) }} />
+          </div>
+        </div>
+
+        <div className={s.main}>
+          {loggedCount > 0 && (
+            <p className={s.logged}>
+              今天已经记录了 {loggedCount} 条穿着。<Link to="/calendar">查看</Link>
+            </p>
+          )}
+
+          <section className={s.rec} aria-live="polite" aria-busy={rec.isFetching}>
+            {rec.isError && <p className="msg-error">{errorText(rec.error)}</p>}
+            {!r && !rec.isError && <p className="muted">{temperature === null ? '正在获取天气…' : '正在挑选…'}</p>}
+            {r && r.source === 'empty' && (
+              <div className={s.empty}>
+                <p>暂时凑不出一套。</p>
+                <ul>{r.notes.map((n) => <li key={n}>{n}</li>)}</ul>
+                <Link to="/wardrobe/new" className="btn btn-primary">去添加衣物</Link>
+              </div>
+            )}
+            {r && r.source !== 'empty' && (
+              <>
+                <div className={s.recHead}>
+                  <h2>
+                    {r.source === 'outfit' && r.outfit_id ? (
+                      <>来自搭配 <Link to={`/outfits/${r.outfit_id}`}>「{outfitTitle({ name: r.outfit_name })}」</Link></>
+                    ) : (
+                      '为你组合了一套'
+                    )}
+                  </h2>
+                </div>
+                <ul className={s.items}>
+                  {r.items.map((it) => (
+                    <li key={it.id}>
+                      <Link to={`/wardrobe/${it.id}`}>
+                        <img src={imageUrl(it.image_key, 'thumb')} alt="" />
+                        <span>{itemTitle(it)}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+                {r.notes.length > 0 && (
+                  <ul className={s.why}>{r.notes.map((n) => <li key={n}>{n}</li>)}</ul>
                 )}
-              </h2>
-            </div>
-            <ul className={s.items}>
-              {r.items.map((it) => (
-                <li key={it.id}>
-                  <Link to={`/wardrobe/${it.id}`}>
-                    <img src={imageUrl(it.image_key, 'thumb')} alt="" />
-                    <span>{itemTitle(it)}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            {r.notes.length > 0 && (
-              <ul className={s.why}>{r.notes.map((n) => <li key={n}>{n}</li>)}</ul>
+                {wear.isSuccess && (
+                  <p className="msg-ok">已记录：今天穿这套。<Link to="/calendar">查看穿着记录</Link></p>
+                )}
+                {wear.isError && <p className="msg-error">{errorText(wear.error)}</p>}
+                <div className={s.actions}>
+                  <button className="btn btn-primary" onClick={wearIt} disabled={wear.isPending || wear.isSuccess}>
+                    {wear.isSuccess ? '已记录 ✓' : '今天就穿这套'}
+                  </button>
+                  <button className="btn" onClick={() => { wear.reset(); setSeed((n) => n + 1) }} disabled={rec.isFetching}>
+                    换一套
+                  </button>
+                  {r.source === 'generated' && (
+                    <button className="btn" onClick={() => navigate('/outfits/new', { state: { preset: r.items } })}>
+                      存为搭配
+                    </button>
+                  )}
+                </div>
+              </>
             )}
-            {wear.isSuccess && (
-              <p className="msg-ok">已记录：今天穿这套。<Link to="/calendar">查看穿着记录</Link></p>
-            )}
-            {wear.isError && <p className="msg-error">{errorText(wear.error)}</p>}
-            <div className={s.actions}>
-              <button className="btn btn-primary" onClick={wearIt} disabled={wear.isPending || wear.isSuccess}>
-                {wear.isSuccess ? '已记录 ✓' : '今天就穿这套'}
-              </button>
-              <button className="btn" onClick={() => { wear.reset(); setSeed((n) => n + 1) }} disabled={rec.isFetching}>
-                换一套
-              </button>
-              {r.source === 'generated' && (
-                <button className="btn" onClick={() => navigate('/outfits/new', { state: { preset: r.items } })}>
-                  存为搭配
-                </button>
-              )}
-            </div>
-          </>
-        )}
-      </section>
+          </section>
+        </div>
+      </div>
     </div>
   )
 }

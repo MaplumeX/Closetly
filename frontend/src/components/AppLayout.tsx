@@ -41,29 +41,32 @@ export function AppLayout() {
   return (
     <div className={s.shell}>
       <aside className={s.sidebar}>
-        <Link to="/" className={s.brand}>Closetly</Link>
+        <Link to="/" className={s.brand} aria-label="Closetly">
+          <span className={s.brandFull}>Closetly</span>
+          <span className={s.brandShort} aria-hidden="true">C</span>
+        </Link>
         <nav className={s.sideNav}>
           {mainNav.map((n) => (
-            <NavLink key={n.to} to={n.to} end={n.to === '/'} className={sideCls}>
+            <NavLink key={n.to} to={n.to} end={n.to === '/'} className={sideCls} title={n.label}>
               <NavIcon name={n.icon} />
-              {n.label}
+              <span className={s.sideLabel}>{n.label}</span>
             </NavLink>
           ))}
         </nav>
         <nav className={`${s.sideNav} ${s.sideBottom}`}>
           {user?.is_admin && (
-            <NavLink to="/admin/users" className={sideCls}>
+            <NavLink to="/admin/users" className={sideCls} title="用户管理">
               <NavIcon name="users" />
-              用户管理
+              <span className={s.sideLabel}>用户管理</span>
             </NavLink>
           )}
-          <NavLink to="/settings" className={sideCls}>
+          <NavLink to="/settings" className={sideCls} title="设置">
             <NavIcon name="settings" />
-            设置
+            <span className={s.sideLabel}>设置</span>
           </NavLink>
-          <button className={s.sideLink} onClick={onLogout}>
+          <button className={s.sideLink} onClick={onLogout} title="退出登录">
             <NavIcon name="logout" />
-            退出登录
+            <span className={s.sideLabel}>退出登录</span>
           </button>
           <p className={s.whoami}>{user?.username}</p>
         </nav>
@@ -83,7 +86,9 @@ export function AppLayout() {
       </header>
 
       <main className={s.content}>
-        <Outlet />
+        <div className={s.page}>
+          <Outlet />
+        </div>
       </main>
 
       <nav className={s.tabbar} aria-label="主导航">

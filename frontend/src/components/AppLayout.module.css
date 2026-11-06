@@ -57,15 +57,61 @@
   color: var(--ink-3);
 }
 
+.brandShort {
+  display: none;
+}
+
+/* 内容区声明为容器：页面里的断点用 @container content 按实际可用宽度判断，而不是视口宽度（桌面端要减去侧边栏） */
 .content {
   margin-left: 220px;
-  padding: 40px 48px;
-  max-width: 1200px;
+  padding: 40px clamp(24px, 4vw, 56px) 56px;
+  container: content / inline-size;
+}
+/* 宽屏时内容在侧边栏右侧的区域里居中，不再全部堆在左边 */
+.page {
+  max-width: 1240px;
+  margin-inline: auto;
 }
 
 .topbar,
 .tabbar {
   display: none;
+}
+
+/* 平板 / 窄窗口：侧边栏收成图标栏，把宽度留给内容 */
+@media (min-width: 768px) and (max-width: 1099px) {
+  .sidebar {
+    width: 76px;
+    padding: 24px 12px 20px;
+    align-items: center;
+  }
+  .brand {
+    padding: 0 0 24px;
+  }
+  .brandFull,
+  .sideLabel,
+  .whoami {
+    display: none;
+  }
+  .brandShort {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--ink);
+    color: var(--bg);
+    font-size: 20px;
+  }
+  .sideLink {
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+  }
+  .content {
+    margin-left: 76px;
+  }
 }
 
 /* 移动端：顶部标题栏 + 底部悬浮导航条 */

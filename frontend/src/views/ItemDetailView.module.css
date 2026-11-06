@@ -116,7 +116,7 @@
   gap: 10px;
 }
 
-@media (max-width: 900px) {
+@container content (max-width: 760px) {
   .layout {
     grid-template-columns: 1fr;
     gap: 24px;

@@ -14,7 +14,7 @@
   min-height: 44px;
   width: 100%;
 }
-@media (max-width: 900px) {
+@container content (max-width: 760px) {
   .layout {
     grid-template-columns: 1fr;
     gap: 20px;
