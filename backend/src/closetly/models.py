@@ -174,3 +174,4 @@ class WearLog(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     items: Mapped[list[Item]] = relationship(secondary=wear_log_items)
+    outfit: Mapped[Outfit | None] = relationship()

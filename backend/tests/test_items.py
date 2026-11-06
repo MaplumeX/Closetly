@@ -1,16 +1,4 @@
-from .conftest import leaf_category, login_as, upload
-
-
-def new_item(client, **overrides):
-    body = {
-        "category_id": leaf_category(client),
-        "image_key": upload(client),
-        "seasons": ["spring", "summer"],
-        **overrides,
-    }
-    r = client.post("/api/items", json=body)
-    assert r.status_code == 201, r.text
-    return r.json()
+from .conftest import leaf_category, login_as, new_item, upload
 
 
 def test_create_and_get(admin_client):

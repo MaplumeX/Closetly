@@ -1,27 +1,28 @@
+from datetime import date
 from decimal import Decimal
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, HTTPException, Query, Request, status
 from sqlalchemy import exists, func, or_, select
-from sqlalchemy.orm import Session, joinedload, selectinload
+from sqlalchemy.orm import Session
 
 from ..deps import CurrentUserDep, DbDep
 from ..images import ImageStore
+from ..item_queries import category_info, item_load_options, wear_stats
 from ..models import Category, Item, ItemStatus, Tag, item_tags
 from ..schemas import Color, ItemCreateIn, ItemOut, ItemUpdateIn, Occasion, Season, TagOut
 
 router = APIRouter(prefix="/api", tags=["items"])
 
 
-def item_out(item: Item) -> ItemOut:
-    cat = item.category
-    top = cat.parent or cat
-    path = f"{cat.parent.name} / {cat.name}" if cat.parent else cat.name
+def item_out(item: Item, stats: tuple[int, date] | None = None) -> ItemOut:
+    path, slot = category_info(item)
+    wear_count, last_worn_on = stats or (0, None)
     return ItemOut(
         id=item.id,
         category_id=item.category_id,
         category_path=path,
-        slot=top.slot,
+        slot=slot,
         image_key=item.image_key,
         name=item.name,
         seasons=item.seasons,
@@ -35,21 +36,20 @@ def item_out(item: Item) -> ItemOut:
         notes=item.notes,
         status=item.status,
         tags=sorted(t.name for t in item.tags),
+        wear_count=wear_count,
+        last_worn_on=last_worn_on,
         created_at=item.created_at,
         updated_at=item.updated_at,
     )
 
 
-def _load_options():
-    return (
-        joinedload(Item.category).joinedload(Category.parent),
-        selectinload(Item.tags),
-    )
+def _item_out_with_stats(db: Session, item: Item) -> ItemOut:
+    return item_out(item, wear_stats(db, item.user_id, [item.id]).get(item.id))
 
 
 def _get_item(db: Session, user_id: int, item_id: int) -> Item:
     item = db.scalar(
-        select(Item).where(Item.id == item_id, Item.user_id == user_id).options(*_load_options())
+        select(Item).where(Item.id == item_id, Item.user_id == user_id).options(*item_load_options())
     )
     if not item:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "衣物不存在")
@@ -110,7 +110,7 @@ def list_items(
 ):
     """多个筛选条件之间是「并且」；同一条件选多个值是「或者」。
     不传 status 时默认隐藏「已淘汰」。"""
-    stmt = select(Item).where(Item.user_id == user.id).options(*_load_options())
+    stmt = select(Item).where(Item.user_id == user.id).options(*item_load_options())
 
     if category_id is not None:
         child_ids = select(Category.id).where(Category.parent_id == category_id)
@@ -136,7 +136,8 @@ def list_items(
         "purchase": Item.purchase_date.desc().nulls_last(),
     }[sort]
     items = db.scalars(stmt.order_by(order, Item.id.desc())).unique().all()
-    return [item_out(i) for i in items]
+    stats = wear_stats(db, user.id)
+    return [item_out(i, stats.get(i.id)) for i in items]
 
 
 @router.post("/items", response_model=ItemOut, status_code=status.HTTP_201_CREATED)
@@ -148,12 +149,12 @@ def create_item(body: ItemCreateIn, request: Request, user: CurrentUserDep, db: 
     item.tags = _resolve_tags(db, user.id, body.tags)
     db.add(item)
     db.commit()
-    return item_out(_get_item(db, user.id, item.id))
+    return _item_out_with_stats(db, _get_item(db, user.id, item.id))
 
 
 @router.get("/items/{item_id}", response_model=ItemOut)
 def get_item(item_id: int, user: CurrentUserDep, db: DbDep):
-    return item_out(_get_item(db, user.id, item_id))
+    return _item_out_with_stats(db, _get_item(db, user.id, item_id))
 
 
 @router.patch("/items/{item_id}", response_model=ItemOut)
@@ -184,7 +185,7 @@ def update_item(item_id: int, body: ItemUpdateIn, request: Request, user: Curren
 
     if old_image:
         store.delete(user.id, old_image)
-    return item_out(_get_item(db, user.id, item.id))
+    return _item_out_with_stats(db, _get_item(db, user.id, item.id))
 
 
 @router.delete("/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)

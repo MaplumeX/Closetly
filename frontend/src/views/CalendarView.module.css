@@ -1,0 +1,171 @@
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 32px;
+  align-items: start;
+}
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.nav h2 {
+  font-size: 20px;
+  min-width: 120px;
+  text-align: center;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+.head {
+  padding: 4px 0 8px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.day {
+  font: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 96px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+}
+.day:hover {
+  border-color: var(--ink-3);
+}
+.day[data-outside] {
+  background: transparent;
+  color: var(--ink-3);
+}
+.day[data-outside] img {
+  opacity: 0.5;
+}
+.day[aria-selected='true'] {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.num {
+  font-size: 13px;
+  line-height: 22px;
+  width: 22px;
+  text-align: center;
+  border-radius: 50%;
+}
+.day[data-today] .num {
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+.thumbs {
+  display: flex;
+  gap: 3px;
+  min-width: 0;
+}
+.thumbs img {
+  width: calc((100% - 6px) / 3);
+  max-width: 34px;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 4px;
+  background: var(--surface-2);
+}
+
+.panel {
+  position: sticky;
+  top: 24px;
+  display: grid;
+  gap: 12px;
+}
+.panel h2 {
+  font-size: 18px;
+}
+.panel > p {
+  margin: 0;
+}
+.log {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+.logHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.logHead a {
+  font-weight: 500;
+  color: var(--ink);
+  text-decoration: none;
+}
+.logHead a:hover {
+  color: var(--accent);
+}
+.logActions {
+  display: flex;
+  gap: 6px;
+}
+.logItems {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.logItems img {
+  display: block;
+  width: 52px;
+  height: 68px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: var(--surface-2);
+}
+.logNotes {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink-2);
+  white-space: pre-wrap;
+}
+
+@media (max-width: 1000px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .panel {
+    position: static;
+  }
+}
+@media (max-width: 767px) {
+  .grid {
+    gap: 2px;
+  }
+  .day {
+    min-height: 62px;
+    padding: 3px;
+    align-items: center;
+  }
+  /* 手机上每天只显示一张缩略图 */
+  .thumbs img {
+    width: 100%;
+    max-width: 30px;
+  }
+  .thumbs img:nth-child(n + 2) {
+    display: none;
+  }
+  .nav h2 {
+    font-size: 17px;
+  }
+}

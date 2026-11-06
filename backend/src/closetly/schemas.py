@@ -154,6 +154,8 @@ class ItemOut(BaseModel):
     notes: str | None
     status: ItemStatus
     tags: list[str]
+    wear_count: int
+    last_worn_on: date | None
     created_at: datetime
     updated_at: datetime
 
@@ -165,3 +167,67 @@ class TagOut(BaseModel):
 
 class ImageOut(BaseModel):
     key: str
+
+
+# ---------- 搭配与穿着记录 ----------
+
+ItemIds = Annotated[list[int], AfterValidator(_dedupe), Field(max_length=30)]
+
+
+class ItemBrief(BaseModel):
+    """搭配、穿着记录中展示单品用的精简信息。"""
+
+    id: int
+    image_key: str
+    name: str | None
+    category_path: str
+    slot: Slot | None
+    status: ItemStatus
+
+
+class OutfitCreateIn(BaseModel):
+    name: OptText(128) = None
+    notes: OptText(2000) = None
+    item_ids: Annotated[ItemIds, Field(min_length=1)]
+
+
+class OutfitUpdateIn(BaseModel):
+    name: OptText(128) = None
+    notes: OptText(2000) = None
+    item_ids: Annotated[ItemIds, Field(min_length=1)] | None = None
+
+
+class OutfitOut(BaseModel):
+    id: int
+    name: str | None
+    notes: str | None
+    items: list[ItemBrief]
+    wear_count: int
+    last_worn_on: date | None
+    created_at: datetime
+    updated_at: datetime
+
+
+class WearLogCreateIn(BaseModel):
+    """item_ids 为空且给了 outfit_id 时，复制这套搭配当前的单品。"""
+
+    worn_on: date
+    outfit_id: int | None = None
+    item_ids: ItemIds = []
+    notes: OptText(2000) = None
+
+
+class WearLogUpdateIn(BaseModel):
+    worn_on: date | None = None
+    item_ids: Annotated[ItemIds, Field(min_length=1)] | None = None
+    notes: OptText(2000) = None
+
+
+class WearLogOut(BaseModel):
+    id: int
+    worn_on: date
+    outfit_id: int | None
+    outfit_name: str | None
+    notes: str | None
+    items: list[ItemBrief]
+    created_at: datetime

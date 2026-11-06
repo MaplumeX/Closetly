@@ -11,7 +11,7 @@ from .config import Settings, get_settings
 from .db import make_engine, make_sessionmaker
 from .ratelimit import LoginRateLimiter
 from .images import ImageStore
-from .routers import admin, auth, categories, images, items
+from .routers import admin, auth, categories, images, items, outfits, wear_logs
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 
@@ -63,6 +63,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(categories.router)
     app.include_router(images.router)
     app.include_router(items.router)
+    app.include_router(outfits.router)
+    app.include_router(wear_logs.router)
 
     static_dir: Path | None = settings.static_dir
     if static_dir and (static_dir / "index.html").is_file():

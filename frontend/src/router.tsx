@@ -45,7 +45,32 @@ export const router = createBrowserRouter([
         handle: { title: '编辑衣物', back: '/wardrobe' },
       },
       { path: 'outfits', lazy: page(() => import('./views/OutfitsView')), handle: { title: '搭配' } },
+      {
+        path: 'outfits/new',
+        lazy: page(() => import('./views/OutfitEditView')),
+        handle: { title: '新建搭配', back: '/outfits' },
+      },
+      {
+        path: 'outfits/:id',
+        lazy: page(() => import('./views/OutfitDetailView')),
+        handle: { title: '搭配详情', back: '/outfits' },
+      },
+      {
+        path: 'outfits/:id/edit',
+        lazy: page(() => import('./views/OutfitEditView')),
+        handle: { title: '编辑搭配', back: '/outfits' },
+      },
       { path: 'calendar', lazy: page(() => import('./views/CalendarView')), handle: { title: '穿着记录' } },
+      {
+        path: 'calendar/new',
+        lazy: page(() => import('./views/WearLogEditView')),
+        handle: { title: '记录穿着', back: '/calendar' },
+      },
+      {
+        path: 'calendar/:id/edit',
+        lazy: page(() => import('./views/WearLogEditView')),
+        handle: { title: '编辑记录', back: '/calendar' },
+      },
       { path: 'settings', lazy: page(() => import('./views/SettingsView')), handle: { title: '设置' } },
       {
         element: <RequireAdmin />,

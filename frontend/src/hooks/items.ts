@@ -47,12 +47,16 @@ export async function uploadImage(file: File): Promise<string> {
   return key
 }
 
+/** 衣物变化会影响列表、标签，以及搭配和穿着记录里展示的单品 */
+function invalidateAll(qc: ReturnType<typeof useQueryClient>) {
+  for (const queryKey of [keys.items, keys.tags, ['outfits'], ['wear-logs']]) qc.invalidateQueries({ queryKey })
+}
+
 function useInvalidateItems() {
   const qc = useQueryClient()
   return (item?: Item) => {
     if (item) qc.setQueryData(keys.item(item.id), item)
-    qc.invalidateQueries({ queryKey: keys.items })
-    qc.invalidateQueries({ queryKey: keys.tags })
+    invalidateAll(qc)
   }
 }
 
@@ -78,8 +82,7 @@ export function useDeleteItem() {
     mutationFn: (id: number) => api(`/api/items/${id}`, { method: 'DELETE' }),
     onSuccess: (_d, id) => {
       qc.removeQueries({ queryKey: keys.item(id) })
-      qc.invalidateQueries({ queryKey: keys.items })
-      qc.invalidateQueries({ queryKey: keys.tags })
+      invalidateAll(qc)
     },
   })
 }

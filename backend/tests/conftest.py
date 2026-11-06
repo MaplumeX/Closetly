@@ -63,3 +63,15 @@ def leaf_category(client, top: str = "上装", child: str = "T恤") -> int:
 def login_as(client, username: str, password: str):
     client.post("/api/auth/logout")
     assert client.post("/api/auth/login", json={"username": username, "password": password}).status_code == 200
+
+
+def new_item(client, **overrides):
+    body = {
+        "category_id": leaf_category(client),
+        "image_key": upload(client),
+        "seasons": ["spring", "summer"],
+        **overrides,
+    }
+    r = client.post("/api/items", json=body)
+    assert r.status_code == 201, r.text
+    return r.json()

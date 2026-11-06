@@ -181,9 +181,14 @@ a:focus-visible {
   color: var(--ink-2);
 }
 
-/* 移动端顶栏已有返回按钮时，隐藏页面里重复的操作 */
+/* 按屏幕宽度显示/隐藏：例如移动端顶栏已有返回按钮时，隐藏页面里重复的操作 */
 @media (max-width: 767px) {
   .hide-mobile {
+    display: none !important;
+  }
+}
+@media (min-width: 768px) {
+  .show-mobile {
     display: none !important;
   }
 }

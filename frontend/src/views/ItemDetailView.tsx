@@ -1,9 +1,12 @@
 import type { ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
-import { errorText, imageUrl, itemTitle } from '@/api'
+import { errorText, imageUrl, itemTitle, outfitTitle } from '@/api'
 import { ColorDot } from '@/components/Chips'
+import { OutfitCollage } from '@/components/OutfitCollage'
 import { COLORS, labelOf, OCCASIONS, SEASONS, STATUSES, WARMTH_LABELS, type ItemStatus } from '@/constants'
 import { useDeleteItem, useItem, useUpdateItem } from '@/hooks/items'
+import { useOutfits } from '@/hooks/outfits'
+import { formatDay } from '@/lib/date'
 import s from './ItemDetailView.module.css'
 
 export default function ItemDetailView() {
@@ -12,6 +15,7 @@ export default function ItemDetailView() {
   const { data: item, isPending, error } = useItem(id)
   const update = useUpdateItem(id)
   const del = useDeleteItem()
+  const outfits = useOutfits(id)
 
   if (isPending) return null
   if (error || !item) return <p className="msg-error">{errorText(error)}</p>
@@ -37,6 +41,10 @@ export default function ItemDetailView() {
     { label: '价格', value: item.price != null && `¥${item.price.toFixed(2)}` },
     { label: '购买日期', value: item.purchase_date },
     { label: '收纳位置', value: item.location },
+    {
+      label: '穿着',
+      value: item.wear_count ? `${item.wear_count} 次，上次${formatDay(item.last_worn_on!)}` : '还没穿过',
+    },
   ]
 
   return (
@@ -80,11 +88,28 @@ export default function ItemDetailView() {
           )}
           {item.notes && <p className={s.notes}>{item.notes}</p>}
 
+          {outfits.data && outfits.data.length > 0 && (
+            <section className={s.outfits}>
+              <h2>出现在 {outfits.data.length} 套搭配中</h2>
+              <ul>
+                {outfits.data.map((o) => (
+                  <li key={o.id}>
+                    <Link to={`/outfits/${o.id}`}>
+                      <OutfitCollage items={o.items} />
+                      <span>{outfitTitle(o)}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
           {(update.isError || del.isError) && <p className="msg-error">{errorText(update.error ?? del.error)}</p>}
 
           <div className={s.actions}>
             <Link to={`/wardrobe/${id}/edit`} className="btn btn-primary">编辑</Link>
             <Link to={`/wardrobe/new?from=${id}`} className="btn">复制为新衣物</Link>
+            <Link to={`/outfits/new?with=${id}`} className="btn">用它搭配</Link>
             <button className="btn btn-danger" onClick={onDelete} disabled={del.isPending}>删除</button>
           </div>
         </div>

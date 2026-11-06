@@ -44,7 +44,7 @@ export function AppLayout() {
         <Link to="/" className={s.brand}>Closetly</Link>
         <nav className={s.sideNav}>
           {mainNav.map((n) => (
-            <NavLink key={n.to} to={n.to} end className={sideCls}>
+            <NavLink key={n.to} to={n.to} end={n.to === '/'} className={sideCls}>
               <NavIcon name={n.icon} />
               {n.label}
             </NavLink>
@@ -88,7 +88,7 @@ export function AppLayout() {
 
       <nav className={s.tabbar} aria-label="主导航">
         {mainNav.map((n) => (
-          <NavLink key={n.to} to={n.to} end className={tabCls}>
+          <NavLink key={n.to} to={n.to} end={n.to === '/'} className={tabCls}>
             <NavIcon name={n.icon} />
             <span>{n.label}</span>
           </NavLink>
