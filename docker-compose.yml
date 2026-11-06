@@ -1,0 +1,16 @@
+services:
+  closetly:
+    build: .
+    image: closetly:latest
+    container_name: closetly
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # 应用端口只对反向代理开放时可以用 *；否则改成代理的 IP
+      FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-*}
+    ports:
+      # 默认只监听本机，由同机的反向代理转发。
+      # 如果反向代理也在 Docker 里，可以删掉 ports，改为加入代理所在的网络。
+      - "${CLOSETLY_BIND:-127.0.0.1:8000}:8000"
+    volumes:
+      - ./data:/data

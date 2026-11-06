@@ -1,0 +1,21 @@
+.login {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+}
+.card {
+  width: min(360px, 100%);
+  display: grid;
+  gap: 16px;
+}
+.card h1 {
+  font-size: 34px;
+}
+.tagline {
+  margin: -12px 0 12px;
+}
+.submit {
+  margin-top: 8px;
+  min-height: 44px;
+}

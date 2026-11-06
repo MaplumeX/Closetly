@@ -1,0 +1,134 @@
+.shell {
+  min-height: 100dvh;
+}
+
+/* 桌面端：左侧边栏 */
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 14px;
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+}
+.brand {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+  padding: 0 10px 24px;
+  letter-spacing: 0.01em;
+}
+.sideNav {
+  display: grid;
+  gap: 2px;
+}
+.sideBottom {
+  margin-top: auto;
+}
+.sideLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--radius);
+  color: var(--ink-2);
+  text-decoration: none;
+  font: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+}
+.sideLink:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.sideLink.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 500;
+}
+.whoami {
+  margin: 10px 10px 0;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.content {
+  margin-left: 220px;
+  padding: 40px 48px;
+  max-width: 1200px;
+}
+
+.topbar,
+.tabbar {
+  display: none;
+}
+
+/* 移动端：顶部标题栏 + 底部标签栏 */
+@media (max-width: 767px) {
+  .sidebar {
+    display: none;
+  }
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 52px;
+    padding: 0 8px 0 16px;
+    padding-top: env(safe-area-inset-top);
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .topbarTitle {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 600;
+  }
+  .iconBtn {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    color: var(--ink-2);
+  }
+  .content {
+    margin-left: 0;
+    padding: 20px 16px calc(84px + env(safe-area-inset-bottom));
+  }
+  /* 顶栏已经显示标题，页面里的大标题隐藏 */
+  .content :global(.page-head) h1 {
+    display: none;
+  }
+  .tabbar {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+  }
+  .tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 0 6px;
+    font-size: 11px;
+    color: var(--ink-3);
+    text-decoration: none;
+  }
+  .tab.active {
+    color: var(--accent);
+  }
+}

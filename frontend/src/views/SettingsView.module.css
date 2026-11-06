@@ -1,0 +1,12 @@
+.form {
+  display: grid;
+  gap: 16px;
+  max-width: 440px;
+}
+.form h2 {
+  font-size: 18px;
+}
+.hint {
+  margin: -10px 0 0;
+  font-size: 13px;
+}

@@ -1,0 +1,46 @@
+import type { ComponentType } from 'react'
+import { createBrowserRouter, Navigate } from 'react-router'
+import { AppLayout } from './components/AppLayout'
+import { PublicOnly, RequireAdmin, RequireAuth } from './components/guards'
+
+export interface RouteHandle {
+  title?: string
+}
+
+/** 按页面拆包：路由第一次访问时才加载对应的页面代码 */
+const page = (load: () => Promise<{ default: ComponentType }>) => async () => ({
+  Component: (await load()).default,
+})
+
+export const router = createBrowserRouter([
+  {
+    element: <PublicOnly />,
+    children: [{ path: '/login', lazy: page(() => import('./views/LoginView')) }],
+  },
+  {
+    path: '/',
+    element: (
+      <RequireAuth>
+        <AppLayout />
+      </RequireAuth>
+    ),
+    children: [
+      { index: true, lazy: page(() => import('./views/TodayView')), handle: { title: '今日' } },
+      { path: 'wardrobe', lazy: page(() => import('./views/WardrobeView')), handle: { title: '衣柜' } },
+      { path: 'outfits', lazy: page(() => import('./views/OutfitsView')), handle: { title: '搭配' } },
+      { path: 'calendar', lazy: page(() => import('./views/CalendarView')), handle: { title: '穿着记录' } },
+      { path: 'settings', lazy: page(() => import('./views/SettingsView')), handle: { title: '设置' } },
+      {
+        element: <RequireAdmin />,
+        children: [
+          {
+            path: 'admin/users',
+            lazy: page(() => import('./views/AdminUsersView')),
+            handle: { title: '用户管理' },
+          },
+        ],
+      },
+    ],
+  },
+  { path: '*', element: <Navigate to="/" replace /> },
+])

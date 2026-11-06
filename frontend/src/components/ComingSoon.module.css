@@ -1,0 +1,10 @@
+.empty {
+  padding: 48px 20px;
+  text-align: center;
+  color: var(--ink-2);
+  border-style: dashed;
+  background: transparent;
+}
+.empty p {
+  margin: 0;
+}
