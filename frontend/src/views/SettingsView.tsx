@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { api, errorText } from '@/api'
 import { useMe } from '@/auth'
+import { ColorManager } from '@/components/ColorManager'
 import { KindManager } from '@/components/KindManager'
 import s from './SettingsView.module.css'
 
@@ -67,6 +68,7 @@ export default function SettingsView() {
         </form>
 
         <KindManager />
+        <ColorManager />
       </div>
     </div>
   )

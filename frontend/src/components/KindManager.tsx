@@ -3,7 +3,7 @@ import { errorText, type KindCount } from '@/api'
 import { confirmDialog, promptDialog } from '@/components/dialogs'
 import { labelOf, SLOTS } from '@/constants'
 import { useKinds, useRenameKind } from '@/hooks/items'
-import s from './KindManager.module.css'
+import s from './ManagerCard.module.css'
 
 /** 设置页里的「衣物类型」：重命名、合并、删除自己定义的类型 */
 export function KindManager() {

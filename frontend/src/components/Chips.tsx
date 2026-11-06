@@ -1,4 +1,5 @@
-import { COLORS } from '@/constants'
+import type { Color } from '@/constants'
+import type { PaletteColor } from '@/hooks/colors'
 import s from './Chips.module.css'
 
 interface Option<T extends string> {
@@ -57,37 +58,47 @@ export function ChipSelect<T extends string | number>({
   )
 }
 
-export function ColorDot({ color, size = 14 }: { color: string; size?: number }) {
-  const hex = COLORS.find((c) => c.value === color)?.hex
-  if (!hex) return null
-  return <span className={s.dot} style={{ background: hex, width: size, height: size }} aria-hidden="true" />
+/** 圆形色点；swatch 是 CSS background，可以是渐变 */
+export function ColorDot({ swatch, size = 14 }: { swatch: string; size?: number }) {
+  return <span className={s.dot} style={{ background: swatch, width: size, height: size }} aria-hidden="true" />
 }
 
-/** 颜色色板：single 时单选（再点取消），否则多选 */
+/** 颜色色板：single 时单选（再点取消），否则多选；给了 onAdd 时末尾多一个「添加」格 */
 export function ColorSwatches({
+  options,
   value,
   onChange,
   label,
   single = false,
+  onAdd,
 }: {
+  options: readonly PaletteColor[]
   value: readonly string[]
-  onChange: (v: string[]) => void
+  onChange: (v: Color[]) => void
   label: string
   single?: boolean
+  onAdd?: () => void
 }) {
-  const toggle = (c: string) => {
-    if (value.includes(c)) onChange(value.filter((x) => x !== c))
-    else onChange(single ? [c] : [...value, c])
+  const selected = options.filter((c) => value.includes(c.value)).map((c) => c.value)
+  const toggle = (c: Color) => {
+    if (selected.includes(c)) onChange(selected.filter((x) => x !== c))
+    else onChange(single ? [c] : [...selected, c])
   }
   return (
     <div className={s.swatches} role="group" aria-label={label}>
-      {COLORS.map((c) => (
-        <button key={c.value} type="button" className={s.swatch} aria-pressed={value.includes(c.value)}
+      {options.map((c) => (
+        <button key={c.value} type="button" className={s.swatch} aria-pressed={selected.includes(c.value)}
           title={c.label} onClick={() => toggle(c.value)}>
-          <ColorDot color={c.value} size={22} />
-          <span>{c.label}</span>
+          <ColorDot swatch={c.swatch} size={22} />
+          <span className={s.swatchLabel}>{c.label}</span>
         </button>
       ))}
+      {onAdd && (
+        <button type="button" className={s.swatch} title="添加颜色" onClick={onAdd}>
+          <span className={s.addDot} aria-hidden="true">＋</span>
+          <span className={s.swatchLabel}>添加</span>
+        </button>
+      )}
     </div>
   )
 }

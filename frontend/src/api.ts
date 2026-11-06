@@ -114,6 +114,18 @@ export interface KindCount {
   count: number
 }
 
+/** 用户自己添加的颜色 */
+export interface CustomColor {
+  id: number
+  name: string
+  /** #rrggbb */
+  hex: string
+  /** 使用这个颜色的衣物数量（含已淘汰） */
+  count: number
+}
+
+export const customColorValue = (id: number): Color => `custom:${id}`
+
 export const imageUrl = (key: string, size: 'full' | 'thumb' = 'full') =>
   `/api/images/${key}${size === 'thumb' ? '?size=thumb' : ''}`
 

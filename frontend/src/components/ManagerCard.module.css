@@ -1,3 +1,4 @@
+/* 设置页里「衣物类型」「自定义颜色」两张管理卡片共用的样式 */
 .card {
   display: grid;
   gap: 16px;
@@ -28,7 +29,8 @@
   padding: 8px 0;
   border-bottom: 1px solid var(--line);
 }
-.group:last-of-type .row:last-child {
+.group:last-of-type .row:last-child,
+.card > .list > .row:last-child {
   border-bottom: 0;
 }
 .name {
@@ -43,4 +45,10 @@
 .actions {
   display: flex;
   gap: 8px;
+}
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }

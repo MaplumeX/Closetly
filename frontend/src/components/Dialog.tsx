@@ -11,7 +11,10 @@ export function DialogHost() {
 
 function DialogView({ req }: { req: Request }) {
   const ref = useRef<HTMLDialogElement>(null)
-  const [text, setText] = useState(req.kind === 'prompt' ? (req.defaultValue ?? '') : '')
+  const [text, setText] = useState(
+    req.kind === 'prompt' ? (req.defaultValue ?? '') : req.kind === 'color' ? (req.defaultName ?? '') : '',
+  )
+  const [hex, setHex] = useState(req.kind === 'color' ? (req.defaultHex ?? '#c4a484') : '')
   const [error, setError] = useState<string | null>(null)
   const done = useRef(false)
 
@@ -25,13 +28,14 @@ function DialogView({ req }: { req: Request }) {
     if (done.current) return
     done.current = true
     if (req.kind === 'confirm') req.resolve(ok)
+    else if (req.kind === 'color') req.resolve(ok ? { name: text.trim(), hex } : null)
     else req.resolve(ok ? text : null)
     settle()
   }
 
   function submit(e: FormEvent) {
     e.preventDefault()
-    if (req.kind === 'prompt') {
+    if (req.kind === 'prompt' || req.kind === 'color') {
       const problem = req.validate?.(text) ?? null
       setError(problem)
       if (problem) return
@@ -71,6 +75,27 @@ function DialogView({ req }: { req: Request }) {
               }}
             />
           </label>
+        )}
+        {req.kind === 'color' && (
+          <div className={s.colorRow}>
+            {/* 系统取色器；色块本身就是按钮 */}
+            <input type="color" className={s.colorPick} aria-label="颜色" value={hex}
+              onChange={(e) => setHex(e.target.value)} />
+            <label className={`field ${s.colorName}`}>
+              <span>名称</span>
+              <input
+                value={text}
+                autoFocus
+                maxLength={16}
+                placeholder="例如：燕麦、雾霾蓝"
+                aria-invalid={!!error}
+                onChange={(e) => {
+                  setText(e.target.value)
+                  if (error) setError(null)
+                }}
+              />
+            </label>
+          </div>
         )}
         {error && <p className="msg-error" role="alert">{error}</p>}
         <div className={s.actions}>

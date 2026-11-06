@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router'
 import { errorText, imageUrl, itemKind, itemTitle, type Item } from '@/api'
 import { ChipGroup, ChipSelect, ColorDot, ColorSwatches } from '@/components/Chips'
 import { labelOf, OCCASIONS, SEASONS, SLOTS, STATUSES, type ItemStatus, type Occasion, type Season, type Slot } from '@/constants'
+import { usePalette, type PaletteColor } from '@/hooks/colors'
 import { useItems, useKinds, useTags } from '@/hooks/items'
 import s from './WardrobeView.module.css'
 
@@ -12,6 +13,7 @@ const LIST_PARAMS = ['season', 'color', 'occasion', 'status', 'tag'] as const
 export default function WardrobeView() {
   const [params, setParams] = useSearchParams()
   const { data: tags } = useTags()
+  const palette = usePalette()
   const items = useItems(params.toString())
   const [panelOpen, setPanelOpen] = useState(false)
 
@@ -111,7 +113,7 @@ export default function WardrobeView() {
             <ChipGroup label="状态" options={STATUSES} value={list('status') as ItemStatus[]} onChange={setList('status')} />
           </Filter>
           <Filter label="主色">
-            <ColorSwatches label="主色" value={list('color')} onChange={setList('color')} />
+            <ColorSwatches label="主色" options={palette} value={list('color')} onChange={setList('color')} />
           </Filter>
           {tags && tags.length > 0 && (
             <Filter label="标签">
@@ -143,14 +145,16 @@ export default function WardrobeView() {
       )}
       {items.data && items.data.length > 0 && (
         <ul className={s.grid} aria-busy={items.isFetching}>
-          {items.data.map((item) => <ItemCard key={item.id} item={item} />)}
+          {items.data.map((item) => (
+            <ItemCard key={item.id} item={item} color={palette.find((c) => c.value === item.color)} />
+          ))}
         </ul>
       )}
     </div>
   )
 }
 
-function ItemCard({ item }: { item: Item }) {
+function ItemCard({ item, color }: { item: Item; color?: PaletteColor }) {
   return (
     <li>
       <Link to={`/wardrobe/${item.id}`} className={s.card}>
@@ -161,7 +165,7 @@ function ItemCard({ item }: { item: Item }) {
         <div className={s.meta}>
           <span className={s.title}>{itemTitle(item)}</span>
           <span className={s.sub}>
-            {item.color && <ColorDot color={item.color} size={10} />}
+            {color && <ColorDot swatch={color.swatch} size={10} />}
             {item.name ? itemKind(item) : item.seasons.map((v) => labelOf(SEASONS, v)).join('')}
           </span>
         </div>

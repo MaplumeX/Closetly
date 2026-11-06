@@ -5,7 +5,8 @@ import { ColorDot } from '@/components/Chips'
 import { confirmDialog } from '@/components/dialogs'
 import { OutfitCollage } from '@/components/OutfitCollage'
 import { Select } from '@/components/Select'
-import { COLORS, labelOf, OCCASIONS, SEASONS, STATUSES, WARMTH_LABELS, type ItemStatus } from '@/constants'
+import { labelOf, OCCASIONS, SEASONS, STATUSES, WARMTH_LABELS, type ItemStatus } from '@/constants'
+import { usePalette } from '@/hooks/colors'
 import { useDeleteItem, useItem, useUpdateItem } from '@/hooks/items'
 import { useOutfits } from '@/hooks/outfits'
 import { formatDay } from '@/lib/date'
@@ -18,6 +19,7 @@ export default function ItemDetailView() {
   const update = useUpdateItem(id)
   const del = useDeleteItem()
   const outfits = useOutfits(id)
+  const palette = usePalette()
 
   if (isPending) return null
   if (error || !item) return <p className="msg-error">{errorText(error)}</p>
@@ -33,10 +35,11 @@ export default function ItemDetailView() {
     del.mutate(id, { onSuccess: () => navigate('/wardrobe', { replace: true }) })
   }
 
-  const colorNode = item.color && (
+  const color = palette.find((c) => c.value === item.color)
+  const colorNode = color && (
     <span className={s.color}>
-      <ColorDot color={item.color} />
-      {labelOf(COLORS, item.color)}
+      <ColorDot swatch={color.swatch} />
+      {color.label}
     </span>
   )
   const rows: { label: string; value: ReactNode }[] = [

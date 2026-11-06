@@ -32,6 +32,7 @@ export const OCCASIONS = [
   { value: 'formal', label: '正式' },
 ] as const
 
+/** 预设色板；用户还可以在后面追加自己的颜色（见 hooks/colors.ts） */
 export const COLORS = [
   { value: 'black', label: '黑', hex: '#1f1f1f' },
   { value: 'white', label: '白', hex: '#f7f7f5' },
@@ -61,7 +62,9 @@ export const WARMTH_LABELS = ['', '很薄', '薄', '适中', '厚', '很厚'] as
 export type Slot = (typeof SLOTS)[number]['value']
 export type Season = (typeof SEASONS)[number]['value']
 export type Occasion = (typeof OCCASIONS)[number]['value']
-export type Color = (typeof COLORS)[number]['value']
+export type PresetColor = (typeof COLORS)[number]['value']
+/** 衣物的主色：预设色，或 `custom:<id>` 表示自定义颜色 */
+export type Color = PresetColor | `custom:${number}`
 export type ItemStatus = (typeof STATUSES)[number]['value']
 
 export const labelOf = <T extends { value: string; label: string }>(list: readonly T[], v: string | null) =>

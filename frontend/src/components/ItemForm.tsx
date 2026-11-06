@@ -1,7 +1,8 @@
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
-import type { ItemInput } from '@/api'
-import { KIND_EXAMPLES, OCCASIONS, SEASONS, SLOTS, STATUSES, WARMTH_LABELS, type Color, type ItemStatus } from '@/constants'
+import { customColorValue, errorText, type ItemInput } from '@/api'
+import { KIND_EXAMPLES, OCCASIONS, SEASONS, SLOTS, STATUSES, WARMTH_LABELS, type ItemStatus } from '@/constants'
 import { toInput, type Draft } from '@/lib/itemDraft'
+import { useAddColor, usePalette } from '@/hooks/colors'
 import { useKinds, useTags } from '@/hooks/items'
 import { ChipGroup, ChipSelect, ColorSwatches } from './Chips'
 import { DateInput } from './DateInput'
@@ -45,6 +46,20 @@ export function ItemForm({
   const problems = useMemo(() => validate(d), [d])
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setD((prev) => ({ ...prev, [k]: v }))
 
+  const palette = usePalette()
+  const addColor = useAddColor()
+  const [colorError, setColorError] = useState<string | null>(null)
+  /** 色板里没有合适的颜色：当场添加一个并选中 */
+  async function onAddColor() {
+    setColorError(null)
+    try {
+      const c = await addColor()
+      if (c) set('color', customColorValue(c.id))
+    } catch (e) {
+      setColorError(errorText(e))
+    }
+  }
+
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setTried(true)
@@ -77,8 +92,9 @@ export function ItemForm({
             <input value={d.name} onChange={(e) => set('name', e.target.value)} maxLength={128} placeholder="不填则显示类型或部位" />
           </Field>
           <Field label="主色" as="div">
-            <ColorSwatches label="主色" single value={d.color ? [d.color] : []}
-              onChange={(v) => set('color', (v[0] as Color | undefined) ?? null)} />
+            <ColorSwatches label="主色" single options={palette} value={d.color ? [d.color] : []}
+              onChange={(v) => set('color', v[0] ?? null)} onAdd={onAddColor} />
+            {colorError && <p className="msg-error" role="alert">{colorError}</p>}
           </Field>
           <Field label="场合" as="div">
             <ChipGroup label="场合" options={OCCASIONS} value={d.occasions} onChange={(v) => set('occasions', v)} />
