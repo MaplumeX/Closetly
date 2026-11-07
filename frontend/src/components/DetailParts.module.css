@@ -1,0 +1,115 @@
+/* 属性分组 */
+.groups {
+  margin: 0;
+  display: grid;
+}
+.groups > div {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+.groups dt {
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 28px;
+}
+.groups dd {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  line-height: 28px;
+}
+
+.seasons {
+  display: flex;
+  gap: 6px;
+}
+.seasons span {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 28px;
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--surface-2);
+  color: var(--ink-3);
+}
+.seasons span[data-on] {
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 500;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chips span {
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 14px;
+  line-height: 26px;
+}
+.warmth {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.warmth > span:first-child {
+  display: flex;
+  gap: 4px;
+}
+.warmth i {
+  width: 18px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-2);
+}
+.warmth i[data-on] {
+  background: var(--accent);
+}
+
+/* 穿着统计卡片 */
+.card {
+  display: grid;
+  gap: 14px;
+  padding: 18px 20px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 12px;
+}
+.stats > div {
+  display: grid;
+  gap: 2px;
+}
+.stats strong {
+  font-family: var(--font-num);
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.stats span {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.hint {
+  margin: 0;
+  font-size: 14px;
+  color: var(--accent);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
