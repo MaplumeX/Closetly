@@ -1,0 +1,55 @@
+.wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.meter {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+.level {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 40px;
+  height: 44px;
+  padding: 0 0 6px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+}
+.level:hover {
+  background: var(--surface);
+}
+.bar {
+  display: block;
+  width: 14px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--ink-3) 45%, transparent);
+  transition: background 0.12s;
+}
+.level[data-on] .bar {
+  background: var(--accent);
+}
+/* 悬停预览用浅一点的颜色，和真正选中区分开 */
+.level[data-on][data-preview] .bar {
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.text {
+  min-width: 4em;
+  font-size: 14px;
+  color: var(--ink);
+}
+.text b {
+  font-family: var(--font-num);
+  font-weight: 600;
+  margin-right: 2px;
+}
+.empty {
+  color: var(--ink-3);
+}

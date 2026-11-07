@@ -1,6 +1,7 @@
-import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { customColorValue, errorText, type ItemInput } from '@/api'
-import { KIND_EXAMPLES, OCCASIONS, SEASONS, SLOTS, STATUSES, WARMTH_LABELS, type ItemStatus } from '@/constants'
+import { KIND_EXAMPLES, OCCASIONS, SEASONS, SLOTS, STATUSES, labelOf, type ItemStatus } from '@/constants'
+import { formatDay } from '@/lib/date'
 import { toInput, type Draft } from '@/lib/itemDraft'
 import { useAddColor, usePalette } from '@/hooks/colors'
 import { useKinds, useTags } from '@/hooks/items'
@@ -11,18 +12,37 @@ import { KindInput } from './KindInput'
 import { PhotoPicker } from './PhotoPicker'
 import { Select } from './Select'
 import { TagInput } from './TagInput'
+import { WarmthMeter } from './WarmthMeter'
 import s from './ItemForm.module.css'
 
 const PRICE_RE = /^\d{1,7}(\.\d{1,2})?$/
 
-function validate(d: Draft): string[] {
-  const p: string[] = []
-  if (!d.slot) p.push('请选择部位')
-  if (!d.seasons.length) p.push('请至少选择一个季节')
-  if (d.price.trim() && !PRICE_RE.test(d.price.trim())) p.push('价格格式不正确')
+type Problems = Partial<Record<'slot' | 'seasons' | 'price', string>>
+
+function validate(d: Draft): Problems {
+  const p: Problems = {}
+  if (!d.slot) p.slot = '请选择部位'
+  if (!d.seasons.length) p.seasons = '请至少选择一个季节'
+  if (d.price.trim() && !PRICE_RE.test(d.price.trim())) p.price = '价格格式不正确，例如 199 或 199.90'
   return p
 }
-const WARMTH_OPTIONS = [1, 2, 3, 4, 5].map((v) => ({ value: v, label: `${v} ${WARMTH_LABELS[v]}` }))
+
+/** 「更多信息」里是否填了东西：编辑时有内容就默认展开 */
+const hasMore = (d: Draft) =>
+  !!(d.brand.trim() || d.price.trim() || d.purchase_date || d.location.trim() || d.notes.trim() || d.status !== 'active')
+
+/** 「更多信息」折叠时，在标题旁列出已填的内容 */
+function moreSummary(d: Draft): string {
+  const parts = [
+    d.brand.trim(),
+    d.price.trim() && `¥${d.price.trim()}`,
+    d.purchase_date && `${formatDay(d.purchase_date)}购入`,
+    d.status !== 'active' && labelOf(STATUSES, d.status),
+    d.location.trim(),
+    d.notes.trim() && '有备注',
+  ].filter(Boolean)
+  return parts.length ? parts.join(' · ') : '品牌、价格、购买日期、状态、收纳位置、备注'
+}
 
 export function ItemForm({
   initial,
@@ -44,7 +64,21 @@ export function ItemForm({
   // 第一次点保存之后才显示校验结果，之后随输入实时更新
   const [tried, setTried] = useState(false)
   const problems = useMemo(() => validate(d), [d])
+  const shown: Problems = tried ? problems : {}
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setD((prev) => ({ ...prev, [k]: v }))
+
+  const [moreOpen, setMoreOpen] = useState(() => hasMore(initial))
+
+  // 校验没通过时滚动到第一个出错的字段。要等错误提示渲染出来，所以放在 effect 里
+  const form = useRef<HTMLFormElement>(null)
+  const [attempt, setAttempt] = useState(0)
+  useEffect(() => {
+    if (!attempt) return
+    const first = form.current?.querySelector<HTMLElement>('[data-invalid]')
+    if (!first) return
+    first.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    first.querySelector<HTMLElement>('input, button')?.focus({ preventScroll: true })
+  }, [attempt])
 
   const palette = usePalette()
   const addColor = useAddColor()
@@ -63,13 +97,17 @@ export function ItemForm({
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setTried(true)
-    if (problems.length) return
+    if (Object.keys(problems).length) {
+      if (problems.price) setMoreOpen(true)
+      setAttempt((n) => n + 1)
+      return
+    }
     const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null
     onSubmit(toInput(d), d, submitter?.value ?? '')
   }
 
   return (
-    <form className={s.form} onSubmit={submit} noValidate>
+    <form ref={form} className={s.form} onSubmit={submit} noValidate>
       <div className={s.photo}>
         <PhotoPicker value={d.image_key} onChange={(k) => set('image_key', k)}
           fallback={d.slot && (
@@ -78,69 +116,79 @@ export function ItemForm({
       </div>
 
       <div className={s.fields}>
-        <section className={s.section}>
-          <h2>基本信息</h2>
-          <Field label="部位" required as="div">
+        <section className={s.section} aria-labelledby="item-form-look">
+          <h2 id="item-form-look">外观</h2>
+          <Field label="部位" required as="div" error={shown.slot}>
             <ChipSelect label="部位" options={SLOTS} value={d.slot} allowEmpty={false}
               onChange={(v) => v && set('slot', v)} />
           </Field>
-          <Field label="类型" hint="自己定义，可不填" as="div">
-            <KindInput aria-label="类型" value={d.kind} onChange={(v) => set('kind', v)} suggestions={kinds}
-              disabled={!d.slot} placeholder={d.slot ? `例如：${KIND_EXAMPLES[d.slot]}` : '先选择部位'} />
-          </Field>
-          <Field label="季节" required as="div">
-            <ChipGroup label="季节" options={SEASONS} value={d.seasons} onChange={(v) => set('seasons', v)} />
-          </Field>
-          <Field label="名称">
-            <input value={d.name} onChange={(e) => set('name', e.target.value)} maxLength={128} placeholder="不填则显示类型或部位" />
-          </Field>
+          <div className={s.grid2}>
+            <Field label="类型" hint="可不填" as="div">
+              <KindInput aria-label="类型" value={d.kind} onChange={(v) => set('kind', v)} suggestions={kinds}
+                disabled={!d.slot} placeholder={d.slot ? `例如：${KIND_EXAMPLES[d.slot]}` : '先选择部位'} />
+            </Field>
+            <Field label="名称" hint="可不填">
+              <input value={d.name} onChange={(e) => set('name', e.target.value)} maxLength={128} placeholder="默认显示类型或部位" />
+            </Field>
+          </div>
           <Field label="主色" as="div">
             <ColorSwatches label="主色" single options={palette} value={d.color ? [d.color] : []}
               onChange={(v) => set('color', v[0] ?? null)} onAdd={onAddColor} />
             {colorError && <p className="msg-error" role="alert">{colorError}</p>}
           </Field>
+        </section>
+
+        <section className={s.section} aria-labelledby="item-form-wear">
+          <h2 id="item-form-wear">穿着</h2>
+          <Field label="季节" required as="div" error={shown.seasons}>
+            <ChipGroup label="季节" options={SEASONS} value={d.seasons} onChange={(v) => set('seasons', v)} all="四季" />
+          </Field>
           <Field label="场合" as="div">
             <ChipGroup label="场合" options={OCCASIONS} value={d.occasions} onChange={(v) => set('occasions', v)} />
           </Field>
           <Field label="保暖度" hint="用于根据气温推荐" as="div">
-            <ChipSelect label="保暖度" options={WARMTH_OPTIONS} value={d.warmth} onChange={(v) => set('warmth', v)} />
+            <WarmthMeter label="保暖度" value={d.warmth} onChange={(v) => set('warmth', v)} />
           </Field>
           <Field label="标签" as="div">
             <TagInput value={d.tags} onChange={(v) => set('tags', v)} suggestions={tags?.map((t) => t.name)} />
           </Field>
         </section>
 
-        <section className={s.section}>
-          <h2>更多信息</h2>
-          <div className={s.grid2}>
-            <Field label="品牌">
-              <input value={d.brand} onChange={(e) => set('brand', e.target.value)} maxLength={128} />
+        <details className={`${s.section} ${s.more}`} open={moreOpen}
+          onToggle={(e) => setMoreOpen(e.currentTarget.open)}>
+          <summary>
+            <h2>更多信息</h2>
+            {!moreOpen && <span className={s.summary}>{moreSummary(d)}</span>}
+          </summary>
+          <div className={s.moreBody}>
+            <div className={s.grid2}>
+              <Field label="品牌">
+                <input value={d.brand} onChange={(e) => set('brand', e.target.value)} maxLength={128} />
+              </Field>
+              <Field label="价格（元）" error={shown.price}>
+                <input value={d.price} onChange={(e) => set('price', e.target.value)} inputMode="decimal" placeholder="0.00"
+                  aria-invalid={!!shown.price || undefined} />
+              </Field>
+              <Field label="购买日期" as="div">
+                <DateInput aria-label="购买日期" clearable value={d.purchase_date} onChange={(v) => set('purchase_date', v)} />
+              </Field>
+              <Field label="状态" as="div">
+                <Select<ItemStatus> aria-label="状态" value={d.status} options={STATUSES} onChange={(v) => set('status', v)} />
+              </Field>
+            </div>
+            <Field label="收纳位置">
+              <input value={d.location} onChange={(e) => set('location', e.target.value)} maxLength={128} placeholder="例如：主卧衣柜左侧" />
             </Field>
-            <Field label="价格（元）">
-              <input value={d.price} onChange={(e) => set('price', e.target.value)} inputMode="decimal" placeholder="0.00" />
-            </Field>
-            <Field label="购买日期" as="div">
-              <DateInput aria-label="购买日期" clearable value={d.purchase_date} onChange={(v) => set('purchase_date', v)} />
-            </Field>
-            <Field label="状态" as="div">
-              <Select<ItemStatus> aria-label="状态" value={d.status} options={STATUSES} onChange={(v) => set('status', v)} />
+            <Field label="备注">
+              <textarea value={d.notes} onChange={(e) => set('notes', e.target.value)} maxLength={2000} rows={3} />
             </Field>
           </div>
-          <Field label="收纳位置">
-            <input value={d.location} onChange={(e) => set('location', e.target.value)} maxLength={128} placeholder="例如：主卧衣柜左侧" />
-          </Field>
-          <Field label="备注">
-            <textarea value={d.notes} onChange={(e) => set('notes', e.target.value)} maxLength={2000} rows={3} />
-          </Field>
-        </section>
+        </details>
 
-        {((tried && problems.length > 0) || error) && (
-          <div className={s.problems} role="alert">
-            {tried && problems.map((p) => <p key={p} className="msg-error">{p}</p>)}
-            {error && <p className="msg-error">{error}</p>}
-          </div>
-        )}
-        <div className={s.actions} aria-busy={submitting}>{actions}</div>
+        <div className={s.actions} aria-busy={submitting}>
+          {error && <p className={`msg-error ${s.submitError}`} role="alert">{error}</p>}
+          {actions}
+        </div>
       </div>
     </form>
   )
@@ -150,24 +198,29 @@ function Field({
   label,
   required,
   hint,
+  error,
   as = 'label',
   children,
 }: {
   label: string
   required?: boolean
   hint?: string
+  /** 校验错误，显示在字段下方 */
+  error?: string
   as?: 'label' | 'div'
   children: ReactNode
 }) {
   const Tag = as
   return (
-    <Tag className="field">
+    <Tag className="field" data-invalid={error ? '' : undefined}>
       <span>
         {label}
         {required && <em className={s.req}> *</em>}
         {hint && <small className={s.hint}>{hint}</small>}
       </span>
       {children}
+      {/* span 而不是 p：Field 可能是 <label>，里面只能放行内内容 */}
+      {error && <span className={s.error} role="alert">{error}</span>}
     </Tag>
   )
 }

@@ -39,7 +39,7 @@ export function AppLayout() {
   }
 
   return (
-    <div className={s.shell}>
+    <div className={handle?.hideTabbar ? `${s.shell} ${s.noTabbar}` : s.shell}>
       <aside className={s.sidebar}>
         <Link to="/" className={s.brand} aria-label="Closetly">
           <span className={s.brandFull}>Closetly</span>

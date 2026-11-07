@@ -8,24 +8,83 @@
   position: sticky;
   top: 24px;
 }
+/* 列宽用 minmax(0, 1fr)：否则「更多信息」的单行摘要会把整列撑宽，在窄屏上溢出 */
 .fields {
   display: grid;
-  gap: 28px;
-  max-width: 620px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  max-width: 640px;
 }
+
+/* 每组字段是一张卡片 */
 .section {
   display: grid;
-  gap: 18px;
+  gap: 20px;
+  padding: 20px 22px 22px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
 }
 .section h2 {
-  font-size: 17px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--line);
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--ink);
 }
+
+/* 「更多信息」：可折叠，折叠时标题旁显示已填内容 */
+/* 写成 .section.more：避免被窄屏下的 .section padding 覆盖 */
+.section.more {
+  padding: 0;
+  gap: 0;
+}
+.more summary {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 18px 22px;
+  cursor: pointer;
+  list-style: none;
+  border-radius: var(--radius-lg);
+}
+.more summary::-webkit-details-marker {
+  display: none;
+}
+.more summary::after {
+  content: '';
+  flex: none;
+  align-self: center;
+  width: 8px;
+  height: 8px;
+  margin-left: auto;
+  border-right: 1.5px solid var(--ink-3);
+  border-bottom: 1.5px solid var(--ink-3);
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.15s;
+}
+.more[open] summary::after {
+  transform: translateY(2px) rotate(-135deg);
+}
+.more summary:hover h2 {
+  color: var(--accent);
+}
+.summary {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.moreBody {
+  display: grid;
+  gap: 20px;
+  padding: 2px 22px 22px;
+}
+
 .grid2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 18px 16px;
+  gap: 20px 16px;
 }
 .req {
   color: var(--accent);
@@ -36,35 +95,68 @@
   color: var(--ink-3);
   font-size: 12px;
 }
-.problems {
-  display: grid;
-  gap: 4px;
+/* 全局 .field > span 会把文字设成灰色，这里提高优先级 */
+:global(.field) > .error {
+  font-size: 13px;
+  color: var(--danger);
 }
+:global(.field)[data-invalid] input {
+  border-color: var(--danger);
+}
+
+/* 保存按钮固定在屏幕底部，表单再长也不用滚到底 */
 .actions {
+  position: sticky;
+  bottom: 16px;
+  z-index: 5;
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 10px;
+  padding: 10px;
+  border-radius: var(--radius-xl);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 1px 2px rgb(23 32 51 / 6%), 0 10px 30px rgb(23 32 51 / 12%);
 }
 .actions :global(.btn) {
   min-height: 44px;
 }
+.submitError {
+  flex-basis: 100%;
+  padding: 0 8px;
+}
 
+/* 单栏：照片收成一行小图，第一屏就能开始填 */
 @container content (max-width: 760px) {
   .form {
-    grid-template-columns: 1fr;
-    gap: 24px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
   }
   .photo {
     position: static;
-    width: min(260px, 70%);
-    margin: 0 auto;
+  }
+  .actions :global(.btn) {
+    flex: 1;
+  }
+}
+@media (max-width: 767px) {
+  /* 这个页面在移动端隐藏了底部导航条（见 router 的 hideTabbar），保存按钮直接贴底 */
+  .actions {
+    bottom: calc(12px + env(safe-area-inset-bottom));
   }
 }
 @media (max-width: 480px) {
   .grid2 {
     grid-template-columns: 1fr;
   }
-  .actions :global(.btn) {
-    flex: 1;
+  .section {
+    padding: 16px 16px 18px;
+  }
+  .more summary {
+    padding: 16px;
+  }
+  .moreBody {
+    padding: 2px 16px 18px;
   }
 }

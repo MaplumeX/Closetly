@@ -7,19 +7,22 @@ interface Option<T extends string> {
   label: string
 }
 
-/** 多选标签组 */
+/** 多选标签组；给了 all 时末尾多一个「全选」快捷项（例如「四季」），全部选中时它也是选中状态，再点一次清空 */
 export function ChipGroup<T extends string>({
   options,
   value,
   onChange,
   label,
+  all,
 }: {
   options: readonly Option<T>[]
   value: readonly T[]
   onChange: (v: T[]) => void
   label: string
+  all?: string
 }) {
   const toggle = (v: T) => onChange(value.includes(v) ? value.filter((x) => x !== v) : [...value, v])
+  const allSelected = options.every((o) => value.includes(o.value))
   return (
     <div className={s.chips} role="group" aria-label={label}>
       {options.map((o) => (
@@ -28,6 +31,15 @@ export function ChipGroup<T extends string>({
           {o.label}
         </button>
       ))}
+      {all && (
+        <>
+          <span className={s.sep} aria-hidden="true" />
+          <button type="button" className={s.chip} aria-pressed={allSelected}
+            onClick={() => onChange(allSelected ? [] : options.map((o) => o.value))}>
+            {all}
+          </button>
+        </>
+      )}
     </div>
   )
 }

@@ -68,11 +68,26 @@
   position: absolute;
   inset: 0;
 }
+.side {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  text-align: center;
+}
+.sideActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+/* 宽屏时照片本身就是按钮，不需要额外的按钮 */
+.pick {
+  display: none;
+}
 .note {
   margin: 0;
   font-size: 13px;
   color: var(--ink-3);
-  text-align: center;
 }
 .remove {
   font: inherit;
@@ -90,4 +105,37 @@
   border-style: solid;
   border-color: var(--accent);
   background: var(--accent-soft);
+}
+
+/* 单栏（与 ItemForm 的断点一致）：小图在左，说明和按钮在右 */
+@container content (max-width: 760px) {
+  .wrap {
+    grid-template-columns: 108px minmax(0, 1fr);
+    align-items: center;
+    gap: 16px;
+    padding: 12px;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+  .frame {
+    border-radius: var(--radius);
+  }
+  .cta,
+  .change,
+  .placeholderText {
+    display: none;
+  }
+  .side {
+    justify-items: start;
+    gap: 10px;
+    text-align: left;
+  }
+  .pick {
+    display: inline-flex;
+  }
+  .status {
+    font-size: 12px;
+    padding: 3px 8px;
+  }
 }

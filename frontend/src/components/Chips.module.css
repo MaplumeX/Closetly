@@ -26,6 +26,15 @@
   font-weight: 500;
 }
 
+/* 普通选项和「全选」快捷项之间的分隔线 */
+.sep {
+  align-self: center;
+  width: 1px;
+  height: 20px;
+  margin: 0 4px;
+  background: var(--line);
+}
+
 .dot {
   display: inline-block;
   flex: none;
