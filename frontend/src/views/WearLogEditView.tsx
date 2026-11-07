@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
-import { errorText, outfitTitle, type ItemBrief, type Outfit } from '@/api'
+import { errorText, outfitTitle, toBrief, type ItemBrief, type Outfit } from '@/api'
 import { DateInput } from '@/components/DateInput'
 import { ItemPicker } from '@/components/ItemPicker'
 import { OutfitCollage } from '@/components/OutfitCollage'
+import { useItem } from '@/hooks/items'
 import { useOutfit, useOutfits, useSaveWearLog, useWearLog } from '@/hooks/outfits'
 import { monthOf, todayISO } from '@/lib/date'
 import s from './WearLogEditView.module.css'
@@ -17,6 +18,7 @@ interface Initial {
 
 /**
  * /calendar/new?date=YYYY-MM-DD&outfit=:id   新建（可预选日期和搭配）
+ * /calendar/new?item=:id                     新建并预选一件衣物
  * /calendar/:id/edit                         编辑
  */
 export default function WearLogEditView() {
@@ -26,8 +28,11 @@ export default function WearLogEditView() {
   const outfitParam = search.get('outfit') ? Number(search.get('outfit')) : null
   const log = useWearLog(id)
   const preset = useOutfit(id === null ? outfitParam : null)
+  const itemParam = search.get('item') ? Number(search.get('item')) : null
+  const presetItem = useItem(id === null && outfitParam === null ? itemParam : null)
 
   if ((id !== null && log.isPending) || (id === null && outfitParam !== null && preset.isPending)) return null
+  if (id === null && outfitParam === null && itemParam !== null && presetItem.isPending) return null
   if (log.isError) return <p className="msg-error">{errorText(log.error)}</p>
 
   const initial: Initial = log.data
@@ -35,7 +40,7 @@ export default function WearLogEditView() {
     : {
         worn_on: search.get('date') ?? todayISO(),
         outfit: preset.data ?? null,
-        items: preset.data?.items ?? [],
+        items: preset.data?.items ?? (presetItem.data ? [toBrief(presetItem.data)] : []),
         notes: '',
       }
   return <WearLogForm id={id} initial={initial} />

@@ -1,0 +1,40 @@
+/* 在 Popover.module.css 的弹层与选项样式之上，补充菜单特有的部分 */
+
+.root {
+  display: inline-block;
+}
+.panel {
+  min-width: 160px;
+}
+.panel[data-align='right'] {
+  left: auto;
+  right: 0;
+}
+.list {
+  display: grid;
+}
+.item {
+  font: inherit;
+  width: 100%;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  text-align: left;
+}
+.item:hover,
+.item:focus-visible {
+  background: var(--surface-2);
+  outline: none;
+}
+.item[aria-current='true'] {
+  color: var(--accent);
+  font-weight: 600;
+}
+.item[data-danger] {
+  color: var(--danger);
+}
+.check {
+  margin-left: auto;
+  width: 16px;
+  height: 16px;
+}
