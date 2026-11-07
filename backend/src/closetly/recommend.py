@@ -15,6 +15,7 @@ from datetime import date
 
 from .item_queries import sorted_briefs
 from .models import SLOT_LABELS, Item, Outfit, Slot
+from .outfit_profile import outfit_profile
 from .schemas import ItemBrief
 
 RECENT_WEIGHT = 0.15
@@ -136,7 +137,13 @@ class Recommender:
             o
             for o in self.outfits
             if o.items
-            and all(i.status == "active" and self._ok(i) for i in o.items)
+            and all(i.status == "active" for i in o.items)
+            and outfit_profile(o.items).fits(
+                season=self.season,
+                min_warmth=self.band.min_warmth,
+                max_warmth=self.band.max_warmth,
+                occasion=self.occasion,
+            )
             and not {i.id for i in o.items} <= self.skip  # 本轮已经展示过
         ]
         if not valid:

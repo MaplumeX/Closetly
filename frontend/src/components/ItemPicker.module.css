@@ -1,55 +1,134 @@
 .picker {
   display: grid;
-  gap: 14px;
+  gap: 18px;
 }
-.tray {
+
+/* ---- 部位格子 ---- */
+.board {
   position: sticky;
   top: 0;
   z-index: 2;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 12px;
+  display: grid;
+  gap: 10px;
   padding: 12px;
-  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   background: var(--surface);
   box-shadow: var(--shadow);
 }
-.trayLabel {
+.boardHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+}
+.boardLabel {
   font-weight: 500;
 }
 .hint {
   color: var(--ink-3);
   font-size: 14px;
 }
-.trayList {
+.all {
+  font: inherit;
+  font-size: 13px;
+  margin-left: auto;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.all[aria-pressed='true'] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+.slots {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+.slot {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 6px;
+  min-width: 0;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.slot[data-active] {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.slotHead {
+  font: inherit;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.slot[data-active] .slotHead {
+  color: var(--accent);
+  font-weight: 500;
+}
+.count {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-size: 12px;
+  text-align: center;
+}
+.placeholder {
+  font: inherit;
+  font-size: 13px;
+  min-height: 64px;
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+  background: none;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+.picked {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  flex-basis: 100%;
+  gap: 4px;
 }
-.trayList:empty {
-  display: none;
+.picked li {
+  flex: 1 1 40px;
+  max-width: 64px;
 }
-.trayItem {
+.pickedItem {
   position: relative;
-  width: 56px;
-  height: 72px;
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
   padding: 0;
   border: 0;
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
   background: var(--surface-2);
   cursor: pointer;
 }
-.trayItem img {
+.pickedItem img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 .remove {
   position: absolute;
@@ -66,31 +145,25 @@
   line-height: 1;
 }
 
+/* ---- 衣柜 ---- */
 .browser {
   display: grid;
   gap: 12px;
 }
-.tabs {
+.browserHead {
   display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  scrollbar-width: none;
+  align-items: center;
+  gap: 12px;
 }
-.tabs button {
-  font: inherit;
-  font-size: 14px;
+.browserHead h3 {
+  margin: 0;
   flex: none;
-  padding: 7px 16px;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  background: var(--surface);
-  color: var(--ink-2);
-  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
 }
-.tabs button[aria-selected='true'] {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--bg);
+.browserHead input {
+  flex: 1;
+  min-width: 0;
 }
 .grid {
   list-style: none;
@@ -153,9 +226,12 @@
   color: var(--accent-ink);
 }
 
-/* 移动端顶栏是 sticky 的，已选栏要停在它下方 */
+/* 手机上部位格子排成两行，也不再吸顶，免得挡住衣柜 */
 @media (max-width: 767px) {
-  .tray {
-    top: calc(52px + env(safe-area-inset-top));
+  .board {
+    position: static;
+  }
+  .slots {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

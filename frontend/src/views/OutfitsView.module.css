@@ -25,6 +25,22 @@
 .sub {
   font-size: 13px;
   color: var(--ink-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sub:empty {
+  display: none;
+}
+.warn {
+  font-size: 13px;
+  color: var(--accent);
+}
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  margin-bottom: 22px;
 }
 .empty {
   display: grid;
@@ -42,5 +58,18 @@
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px 12px;
+  }
+}
+/* 手机上筛选条排成一行，左右滑动 */
+@media (max-width: 767px) {
+  .filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 16px;
+  }
+  .filters > * {
+    flex: none;
+    flex-wrap: nowrap;
   }
 }

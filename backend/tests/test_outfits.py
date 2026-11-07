@@ -126,3 +126,22 @@ def test_isolation(admin_client):
     # 不能用别人的衣物或搭配
     assert admin_client.post("/api/outfits", json={"item_ids": [top["id"]]}).status_code == 422
     assert admin_client.post("/api/wear-logs", json={"worn_on": "2026-11-01", "outfit_id": oid}).status_code == 422
+
+
+def test_outfit_profile_is_derived_from_items(admin_client):
+    top = new_item(admin_client, seasons=["autumn", "spring", "winter"], occasions=["casual", "commute"], warmth=2)
+    bottom = new_item(admin_client, slot="bottom", seasons=["spring", "autumn"], occasions=["commute"], warmth=4)
+    shoes = new_item(admin_client, slot="shoes", seasons=["autumn", "spring"])  # 未填场合、保暖度：不限
+    r = admin_client.post("/api/outfits", json={"item_ids": [top["id"], bottom["id"], shoes["id"]]})
+    o = r.json()
+    assert o["seasons"] == ["spring", "autumn"]
+    assert o["occasions"] == ["commute"]
+    assert (o["warmth_min"], o["warmth_max"]) == (2, 4)
+
+    o = admin_client.patch(f"/api/outfits/{o['id']}", json={"item_ids": [shoes["id"]]}).json()
+    assert o["occasions"] is None and o["warmth_min"] is None and o["warmth_max"] is None
+
+    # 场合没有交集：空列表，与「不限」区分开
+    sport = new_item(admin_client, slot="bottom", occasions=["sport"])
+    o = admin_client.patch(f"/api/outfits/{o['id']}", json={"item_ids": [top["id"], sport["id"]]}).json()
+    assert o["occasions"] == [] and o["seasons"] == ["spring"]

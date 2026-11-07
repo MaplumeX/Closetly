@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session, selectinload
 from ..deps import CurrentUserDep, DbDep
 from ..item_queries import load_user_items, sorted_briefs
 from ..models import Outfit, WearLog, outfit_items
+from ..outfit_profile import outfit_profile
 from ..schemas import OutfitCreateIn, OutfitOut, OutfitUpdateIn
 
 router = APIRouter(prefix="/api/outfits", tags=["outfits"])
@@ -25,11 +26,16 @@ def _wear_stats(db: Session, user_id: int, outfit_ids: list[int]) -> dict[int, t
 
 def _out(outfit: Outfit, stats: dict) -> OutfitOut:
     count, last = stats.get(outfit.id, (0, None))
+    profile = outfit_profile(outfit.items)
     return OutfitOut(
         id=outfit.id,
         name=outfit.name,
         notes=outfit.notes,
         items=sorted_briefs(outfit.items),
+        seasons=profile.seasons,
+        occasions=profile.occasions,
+        warmth_min=profile.warmth_min,
+        warmth_max=profile.warmth_max,
         wear_count=count,
         last_worn_on=last,
         created_at=outfit.created_at,

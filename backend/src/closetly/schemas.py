@@ -255,6 +255,11 @@ class OutfitOut(BaseModel):
     name: str | None
     notes: str | None
     items: list[ItemBrief]
+    # 以下由单品推导，规则见 outfit_profile.py
+    seasons: list[Season]  # 每件单品都适合的季节
+    occasions: list[Occasion] | None  # None 表示不限（没有单品填写场合）
+    warmth_min: int | None
+    warmth_max: int | None
     wear_count: int
     last_worn_on: date | None
     created_at: datetime
