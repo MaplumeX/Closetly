@@ -7,6 +7,8 @@ export interface RouteHandle {
   title?: string
   /** 移动端顶栏显示返回按钮；值是没有浏览历史时的默认返回地址 */
   back?: string
+  /** 移动端隐藏底部导航条：表单页把底部留给固定的保存按钮 */
+  hideTabbar?: boolean
 }
 
 /** 按页面拆包：路由第一次访问时才加载对应的页面代码 */
@@ -35,7 +37,7 @@ export const router = createBrowserRouter([
       {
         path: 'wardrobe/new',
         lazy: page(() => import('./views/ItemEditView')),
-        handle: { title: '添加衣物', back: '/wardrobe' },
+        handle: { title: '添加衣物', back: '/wardrobe', hideTabbar: true },
       },
       {
         path: 'wardrobe/:id',
@@ -45,7 +47,7 @@ export const router = createBrowserRouter([
       {
         path: 'wardrobe/:id/edit',
         lazy: page(() => import('./views/ItemEditView')),
-        handle: { title: '编辑衣物', back: '/wardrobe' },
+        handle: { title: '编辑衣物', back: '/wardrobe', hideTabbar: true },
       },
       { path: 'outfits', lazy: page(() => import('./views/OutfitsView')), handle: { title: '搭配' } },
       {

@@ -41,9 +41,11 @@ export function PhotoPicker({
 
   const src = preview ?? (value ? imageUrl(value) : null)
 
+  const pick = () => input.current?.click()
+
   return (
     <div className={s.wrap}>
-      <button type="button" className={s.frame} onClick={() => input.current?.click()} disabled={busy}
+      <button type="button" className={s.frame} onClick={pick} disabled={busy}
         aria-label={value ? '更换照片' : '添加照片'}>
         {src ? (
           <img src={src} alt="" className={busy ? s.dim : undefined} />
@@ -59,20 +61,27 @@ export function PhotoPicker({
               <path d="M4 8a2 2 0 0 1 2-2h1.5l1.5-2h6l1.5 2H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8z" />
               <circle cx="12" cy="12.5" r="3.5" />
             </svg>
-            拍照或选择照片
+            <span className={s.placeholderText}>拍照或选择照片</span>
           </span>
         )}
         {busy && <span className={s.status}>上传中…</span>}
         {value && !busy && <span className={s.change}>更换</span>}
       </button>
-      <p className={s.note}>
-        {value ? (
-          <button type="button" className={s.remove} onClick={() => onChange(null)} disabled={busy}>移除照片</button>
-        ) : (
-          '照片可以以后再补，没有照片时显示上面的剪影'
-        )}
-      </p>
-      {error && <p className="msg-error" role="alert">{error}</p>}
+      {/* 宽屏时在照片下方居中；单栏时在小图右侧，并显示单独的按钮（小图里放不下提示文字） */}
+      <div className={s.side}>
+        <p className={s.note}>
+          {value ? '照片会作为这件衣物的封面' : '照片可以以后再补，没有照片时显示剪影'}
+        </p>
+        <div className={s.sideActions}>
+          <button type="button" className={`btn btn-sm ${s.pick}`} onClick={pick} disabled={busy}>
+            {value ? '更换照片' : '拍照或选择照片'}
+          </button>
+          {value && (
+            <button type="button" className={s.remove} onClick={() => onChange(null)} disabled={busy}>移除照片</button>
+          )}
+        </div>
+        {error && <p className="msg-error" role="alert">{error}</p>}
+      </div>
       <input ref={input} type="file" accept="image/*" hidden onChange={(e) => onFile(e.target.files?.[0])} />
     </div>
   )

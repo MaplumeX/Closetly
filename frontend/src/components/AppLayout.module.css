@@ -186,6 +186,12 @@
     color: var(--dock-ink);
     text-decoration: none;
   }
+  .noTabbar .tabbar {
+    display: none;
+  }
+  .noTabbar .content {
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  }
   .tab svg {
     width: 18px;
     height: 18px;
