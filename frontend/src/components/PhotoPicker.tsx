@@ -1,10 +1,12 @@
-import { useRef, useState, type ReactNode } from 'react'
-import { errorText, imageUrl } from '@/api'
-import { uploadImage } from '@/hooks/items'
+import type { ReactNode } from 'react'
+import { imageUrl } from '@/api'
+import { canPasteOrDrop, usePhotoUpload } from '@/lib/usePhotoUpload'
 import s from './PhotoPicker.module.css'
 
+const CTA = canPasteOrDrop ? '选择、粘贴或拖入照片' : '拍照或选择照片'
+
 /**
- * 选择照片后立即上传，成功后回调 key。手机上会提供「拍照」选项。
+ * 选择、粘贴或拖入照片后立即上传，成功后回调 key。手机上会提供「拍照」选项。
  * 照片选填：没有照片时显示 fallback（按当前填写的部位、类型和主色画的剪影），也可以移除已有照片。
  */
 export function PhotoPicker({
@@ -16,41 +18,21 @@ export function PhotoPicker({
   onChange: (key: string | null) => void
   fallback?: ReactNode
 }) {
-  const input = useRef<HTMLInputElement>(null)
-  const [preview, setPreview] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
-
-  async function onFile(file: File | undefined) {
-    if (!file) return
-    setError('')
-    setBusy(true)
-    const local = URL.createObjectURL(file)
-    setPreview(local)
-    try {
-      onChange(await uploadImage(file))
-    } catch (e) {
-      setError(errorText(e))
-    } finally {
-      setBusy(false)
-      setPreview(null)
-      URL.revokeObjectURL(local)
-      if (input.current) input.current.value = ''
-    }
-  }
+  const { busy, preview, error, dragging, pick, inputProps, dropProps } = usePhotoUpload(onChange)
 
   const src = preview ?? (value ? imageUrl(value) : null)
 
   return (
     <div className={s.wrap}>
-      <button type="button" className={s.frame} onClick={() => input.current?.click()} disabled={busy}
+      <button type="button" className={`${s.frame} ${dragging ? s.dragging : ''}`} onClick={pick} disabled={busy}
+        {...dropProps}
         aria-label={value ? '更换照片' : '添加照片'}>
         {src ? (
           <img src={src} alt="" className={busy ? s.dim : undefined} />
         ) : fallback ? (
           <>
             {fallback}
-            <span className={s.cta}>拍照或选择照片</span>
+            <span className={s.cta}>{CTA}</span>
           </>
         ) : (
           <span className={s.placeholder}>
@@ -59,7 +41,7 @@ export function PhotoPicker({
               <path d="M4 8a2 2 0 0 1 2-2h1.5l1.5-2h6l1.5 2H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8z" />
               <circle cx="12" cy="12.5" r="3.5" />
             </svg>
-            拍照或选择照片
+            {CTA}
           </span>
         )}
         {busy && <span className={s.status}>上传中…</span>}
@@ -73,7 +55,7 @@ export function PhotoPicker({
         )}
       </p>
       {error && <p className="msg-error" role="alert">{error}</p>}
-      <input ref={input} type="file" accept="image/*" hidden onChange={(e) => onFile(e.target.files?.[0])} />
+      <input {...inputProps} />
     </div>
   )
 }
