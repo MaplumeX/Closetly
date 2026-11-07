@@ -1,6 +1,6 @@
 [project]
 name = "closetly"
-version = "0.1.1"
+version = "0.1.2"
 description = "Closetly - self-hosted digital wardrobe"
 authors = [
     { name = "Maplume", email = "1634378887@qq.com" }
