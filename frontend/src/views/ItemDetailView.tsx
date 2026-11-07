@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { errorText, imageUrl, itemCategory, itemTitle, outfitTitle } from '@/api'
 import { ColorDot } from '@/components/Chips'
@@ -8,9 +8,10 @@ import { OutfitCollage } from '@/components/OutfitCollage'
 import { Select } from '@/components/Select'
 import { labelOf, OCCASIONS, SEASONS, STATUSES, WARMTH_LABELS, type ItemStatus } from '@/constants'
 import { usePalette } from '@/hooks/colors'
-import { uploadImage, useDeleteItem, useItem, useUpdateItem } from '@/hooks/items'
+import { useDeleteItem, useItem, useUpdateItem } from '@/hooks/items'
 import { useOutfits } from '@/hooks/outfits'
 import { formatDay } from '@/lib/date'
+import { canPasteOrDrop, usePhotoUpload } from '@/lib/usePhotoUpload'
 import s from './ItemDetailView.module.css'
 
 export default function ItemDetailView() {
@@ -74,10 +75,9 @@ export default function ItemDetailView() {
             <ItemThumb item={item} size="full" alt={itemTitle(item)} />
           </a>
         ) : (
-          <div className={`${s.photo} ${s.noPhoto}`}>
+          <AddPhoto onUploaded={(key) => update.mutateAsync({ image_key: key })}>
             <ItemThumb item={item} alt={itemTitle(item)} />
-            <AddPhoto onUploaded={(key) => update.mutateAsync({ image_key: key })} />
-          </div>
+          </AddPhoto>
         )}
 
         <div className={s.info}>
@@ -135,33 +135,21 @@ export default function ItemDetailView() {
   )
 }
 
-/** 没有照片的衣物：在详情页直接拍照补上 */
-function AddPhoto({ onUploaded }: { onUploaded: (key: string) => Promise<unknown> }) {
-  const input = useRef<HTMLInputElement>(null)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
-
-  async function onFile(file: File | undefined) {
-    if (!file) return
-    setError('')
-    setBusy(true)
-    try {
-      await onUploaded(await uploadImage(file))
-    } catch (e) {
-      setError(errorText(e))
-    } finally {
-      setBusy(false)
-      if (input.current) input.current.value = ''
-    }
-  }
+/** 没有照片的衣物：在详情页直接补上照片（选择、粘贴或拖到剪影上） */
+function AddPhoto({ onUploaded, children }: { onUploaded: (key: string) => Promise<unknown>; children: ReactNode }) {
+  const { busy, error, dragging, pick, inputProps, dropProps } = usePhotoUpload(onUploaded)
 
   return (
-    <div className={s.addPhoto}>
-      <button type="button" className="btn btn-sm" onClick={() => input.current?.click()} disabled={busy}>
-        {busy ? '上传中…' : '补拍照片'}
-      </button>
-      {error && <p className="msg-error" role="alert">{error}</p>}
-      <input ref={input} type="file" accept="image/*" hidden onChange={(e) => onFile(e.target.files?.[0])} />
+    <div className={`${s.photo} ${s.noPhoto} ${dragging ? s.dragging : ''}`} {...dropProps}>
+      {children}
+      <div className={s.addPhoto}>
+        <button type="button" className="btn btn-sm" onClick={pick} disabled={busy}>
+          {busy ? '上传中…' : '补拍照片'}
+        </button>
+        {canPasteOrDrop && !busy && !error && <p className={s.hint}>也可以直接粘贴或拖入图片</p>}
+        {error && <p className="msg-error" role="alert">{error}</p>}
+        <input {...inputProps} />
+      </div>
     </div>
   )
 }

@@ -86,3 +86,8 @@
 .remove:hover {
   color: var(--danger);
 }
+.frame.dragging {
+  border-style: solid;
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
