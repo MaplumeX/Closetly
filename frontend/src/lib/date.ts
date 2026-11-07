@@ -35,6 +35,9 @@ export function formatFull(s: string): string {
   return `${d.getMonth() + 1}月${d.getDate()}日 周${WEEKDAYS[d.getDay()]}`
 }
 
+/** 从某天到今天过了几天 */
+export const daysSince = (s: string) => Math.round((parseISO(todayISO()).getTime() - parseISO(s).getTime()) / 86_400_000)
+
 /** 'YYYY-MM' */
 export const monthOf = (s: string) => s.slice(0, 7)
 

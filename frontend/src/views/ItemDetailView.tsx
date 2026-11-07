@@ -2,15 +2,16 @@ import type { ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { errorText, imageUrl, itemCategory, itemTitle, outfitTitle, type Item } from '@/api'
 import { ColorDot } from '@/components/Chips'
+import { Group, Groups, OccasionChips, SeasonBar, StatsCard, WarmthRange, type Stat } from '@/components/DetailParts'
 import { ItemThumb } from '@/components/ItemThumb'
 import { confirmDialog } from '@/components/dialogs'
 import { Menu } from '@/components/Menu'
 import { OutfitCollage } from '@/components/OutfitCollage'
-import { labelOf, OCCASIONS, SEASONS, STATUSES, WARMTH_LABELS } from '@/constants'
+import { labelOf, STATUSES } from '@/constants'
 import { usePalette } from '@/hooks/colors'
 import { useDeleteItem, useItem, useUpdateItem } from '@/hooks/items'
 import { useOutfits, useSaveWearLog } from '@/hooks/outfits'
-import { formatDay, formatLong, parseISO, todayISO } from '@/lib/date'
+import { daysSince, formatDay, formatLong, todayISO } from '@/lib/date'
 import { canPasteOrDrop, usePhotoUpload } from '@/lib/usePhotoUpload'
 import s from './ItemDetailView.module.css'
 
@@ -114,41 +115,19 @@ export default function ItemDetailView() {
         )}
 
         <div className={s.info}>
-          <section className={s.wear} aria-label="穿着情况">
-            <WearStats item={item} />
-            <div className={s.wearActions}>
-              <button className="btn btn-sm" disabled={wear.isPending || wornToday}
-                onClick={() => wear.mutate({ worn_on: todayISO(), item_ids: [id], notes: null })}>
-                {wornToday ? '今天已穿 ✓' : '今天穿了它'}
-              </button>
-              <Link to={`/calendar/new?item=${id}`} className="btn btn-sm">记录到其他日期</Link>
-            </div>
-          </section>
+          <StatsCard label="穿着情况" {...wearStats(item)}>
+            <button className="btn btn-sm" disabled={wear.isPending || wornToday}
+              onClick={() => wear.mutate({ worn_on: todayISO(), item_ids: [id], notes: null })}>
+              {wornToday ? '今天已穿 ✓' : '今天穿了它'}
+            </button>
+            <Link to={`/calendar/new?item=${id}`} className="btn btn-sm">记录到其他日期</Link>
+          </StatsCard>
 
-          <dl className={s.groups}>
+          <Groups>
             <Group label="适合">
-              {item.seasons.length > 0 && (
-                <div className={s.seasons} aria-label={`季节：${item.seasons.map((v) => labelOf(SEASONS, v)).join('、')}`}>
-                  {SEASONS.map((o) => (
-                    <span key={o.value} data-on={item.seasons.includes(o.value) || undefined} aria-hidden="true">
-                      {o.label}
-                    </span>
-                  ))}
-                </div>
-              )}
-              {item.occasions.length > 0 && (
-                <div className={s.chips}>
-                  {item.occasions.map((v) => <span key={v}>{labelOf(OCCASIONS, v)}</span>)}
-                </div>
-              )}
-              {item.warmth && (
-                <div className={s.warmth} aria-label={`保暖度 ${item.warmth}/5，${WARMTH_LABELS[item.warmth]}`}>
-                  <span aria-hidden="true">
-                    {[1, 2, 3, 4, 5].map((n) => <i key={n} data-on={n <= item.warmth! || undefined} />)}
-                  </span>
-                  <span aria-hidden="true">{WARMTH_LABELS[item.warmth]}</span>
-                </div>
-              )}
+              {item.seasons.length > 0 && <SeasonBar seasons={item.seasons} />}
+              {item.occasions.length > 0 && <OccasionChips occasions={item.occasions} />}
+              {item.warmth && <WarmthRange min={item.warmth} max={item.warmth} />}
             </Group>
             <Group label="购买">{purchase}</Group>
             <Group label="收纳">{item.location}</Group>
@@ -162,7 +141,7 @@ export default function ItemDetailView() {
               )}
             </Group>
             <Group label="备注">{item.notes && <p className={s.notes}>{item.notes}</p>}</Group>
-          </dl>
+          </Groups>
         </div>
       </div>
 
@@ -192,23 +171,8 @@ export default function ItemDetailView() {
   )
 }
 
-/** 属性分组：内容为空时整行不显示 */
-function Group({ label, children }: { label: string; children: ReactNode }) {
-  const empty = children === null || children === undefined || children === false || children === ''
-    || (Array.isArray(children) && children.every((c) => !c))
-  if (empty) return null
-  return (
-    <div>
-      <dt>{label}</dt>
-      <dd>{children}</dd>
-    </div>
-  )
-}
-
-const daysSince = (iso: string) => Math.round((parseISO(todayISO()).getTime() - parseISO(iso).getTime()) / 86_400_000)
-
-function WearStats({ item }: { item: Item }) {
-  const stats: { label: string; value: string }[] = [
+function wearStats(item: Item): { stats: Stat[]; hint: string | null } {
+  const stats: Stat[] = [
     { label: '穿过', value: `${item.wear_count} 次` },
     { label: '上次穿', value: item.last_worn_on ? formatDay(item.last_worn_on) : '—' },
   ]
@@ -223,20 +187,7 @@ function WearStats({ item }: { item: Item }) {
   } else if (item.last_worn_on && daysSince(item.last_worn_on) >= 90) {
     hint = `已经 ${daysSince(item.last_worn_on)} 天没穿了`
   }
-
-  return (
-    <>
-      <div className={s.stats}>
-        {stats.map((st) => (
-          <div key={st.label}>
-            <strong>{st.value}</strong>
-            <span>{st.label}</span>
-          </div>
-        ))}
-      </div>
-      {hint && <p className={s.hintLine}>{hint}</p>}
-    </>
-  )
+  return { stats, hint }
 }
 
 /** 没有照片的衣物：在详情页直接补上照片（选择、粘贴或拖到剪影上） */
