@@ -54,27 +54,28 @@ function OutfitForm({ id, initial, preset }: { id: number | null; initial?: Outf
         <div>
           <h1>{id ? '编辑搭配' : '新建搭配'}</h1>
         </div>
-        <Link to={id ? `/outfits/${id}` : '/outfits'} className="btn hide-mobile">取消</Link>
+        <div className={`${s.headActions} hide-mobile`}>
+          <Link to={id ? `/outfits/${id}` : '/outfits'} className="btn">取消</Link>
+          {saveButton}
+        </div>
       </div>
 
-      <div className={s.layout}>
-        <div className={s.meta}>
-          <label className="field">
-            <span>名称</span>
-            <input value={name} onChange={(e) => setName(e.target.value)} maxLength={128} placeholder="例如：周一通勤" />
-          </label>
-          <label className="field">
-            <span>备注</span>
-            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={2000} rows={3} />
-          </label>
-          {tried && !items.length && <p className="msg-error" role="alert">请至少选择一件衣物</p>}
-          {save.isError && <p className="msg-error" role="alert">{errorText(save.error)}</p>}
-          <div className={`${s.actions} hide-mobile`}>{saveButton}</div>
-        </div>
-        <ItemPicker selected={items} onChange={setItems} />
-        {/* 手机上先选衣物，保存按钮放在最后 */}
-        <div className={`${s.actions} show-mobile`}>{saveButton}</div>
+      <div className={s.meta}>
+        <label className="field">
+          <span>名称</span>
+          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={128} placeholder="例如：周一通勤" />
+        </label>
+        <label className="field">
+          <span>备注</span>
+          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={2000} rows={1} />
+        </label>
       </div>
+      {tried && !items.length && <p className="msg-error" role="alert">请至少选择一件衣物</p>}
+      {save.isError && <p className="msg-error" role="alert">{errorText(save.error)}</p>}
+
+      <ItemPicker selected={items} onChange={setItems} />
+      {/* 手机上先选衣物，保存按钮放在最后 */}
+      <div className={`${s.mobileSave} show-mobile`}>{saveButton}</div>
     </form>
   )
 }

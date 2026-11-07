@@ -112,7 +112,8 @@ function WearLogForm({ id, initial }: { id: number | null; initial: Initial }) {
 
         <div className="field">
           <span>穿了哪些衣物</span>
-          <ItemPicker selected={items} onChange={setItems} />
+          {/* 补记的可能是以前穿的，衣物现在送洗或闲置不代表当时不能穿 */}
+          <ItemPicker selected={items} onChange={setItems} checkStatus={false} />
         </div>
 
         {tried && !items.length && <p className="msg-error" role="alert">请至少选择一件衣物</p>}

@@ -133,9 +133,12 @@ export const imageUrl = (key: string, size: 'full' | 'thumb' = 'full') =>
 // ---------- 搭配与穿着记录 ----------
 
 /** 搭配、穿着记录里的精简单品信息 */
-export type ItemBrief = Pick<Item, 'id' | 'image_key' | 'name' | 'slot' | 'kind' | 'color' | 'status'>
+export type ItemBrief = Pick<
+  Item,
+  'id' | 'image_key' | 'name' | 'slot' | 'kind' | 'color' | 'status' | 'seasons' | 'occasions' | 'warmth'
+>
 
-export const toBrief = ({ id, image_key, name, slot, kind, color, status }: ItemBrief): ItemBrief => ({
+export const toBrief = ({ id, image_key, name, slot, kind, color, status, seasons, occasions, warmth }: ItemBrief): ItemBrief => ({
   id,
   image_key,
   name,
@@ -143,6 +146,9 @@ export const toBrief = ({ id, image_key, name, slot, kind, color, status }: Item
   kind,
   color,
   status,
+  seasons,
+  occasions,
+  warmth,
 })
 
 export interface Outfit {
@@ -150,6 +156,13 @@ export interface Outfit {
   name: string | null
   notes: string | null
   items: ItemBrief[]
+  /** 以下由单品推导：每件单品都适合的季节 */
+  seasons: Season[]
+  /** 填写了场合的单品的共同场合；null 表示不限（没有单品填写场合） */
+  occasions: Occasion[] | null
+  /** 填写了保暖度的单品的范围；都没填时为 null */
+  warmth_min: number | null
+  warmth_max: number | null
   wear_count: number
   last_worn_on: string | null
   created_at: string

@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
-import { errorText, itemTitle, outfitTitle } from '@/api'
+import { errorText, itemCategory, itemTitle, outfitTitle } from '@/api'
+import { ItemThumb } from '@/components/ItemThumb'
 import { confirmDialog } from '@/components/dialogs'
 import { labelOf, STATUSES } from '@/constants'
 import { useDeleteOutfit, useOutfit, useSaveWearLog } from '@/hooks/outfits'
 import { formatDay, todayISO } from '@/lib/date'
-import { ItemThumb } from '@/components/ItemThumb'
+import { profileText, sortBySlot } from '@/lib/outfit'
 import s from './OutfitDetailView.module.css'
 
 export default function OutfitDetailView() {
@@ -50,6 +51,7 @@ export default function OutfitDetailView() {
             {outfit.items.length} 件 ·{' '}
             {outfit.wear_count ? `穿过 ${outfit.wear_count} 次，上次${formatDay(outfit.last_worn_on!)}` : '还没穿过'}
           </p>
+          {outfit.items.length > 0 && <p className={s.profile}>适合：{profileText(outfit)}</p>}
         </div>
       </div>
 
@@ -60,11 +62,12 @@ export default function OutfitDetailView() {
       )}
 
       <ul className={s.items}>
-        {outfit.items.map((it) => (
+        {sortBySlot(outfit.items).map((it) => (
           <li key={it.id}>
             <Link to={`/wardrobe/${it.id}`} className={s.item}>
               <ItemThumb item={it} />
               <span>{itemTitle(it)}</span>
+              <small>{itemCategory(it)}</small>
             </Link>
           </li>
         ))}

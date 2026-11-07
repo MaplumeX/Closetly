@@ -40,6 +40,14 @@
   border-radius: var(--radius-lg);
   background: var(--surface-2);
 }
+.item small {
+  margin-top: -4px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.profile {
+  margin-top: 2px;
+}
 .item:hover span {
   color: var(--accent);
 }
