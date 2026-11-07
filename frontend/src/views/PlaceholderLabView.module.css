@@ -1,0 +1,188 @@
+.page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 32px 20px 80px;
+}
+.section {
+  margin-bottom: 48px;
+}
+.section h2 {
+  font-size: 20px;
+  margin-bottom: 6px;
+}
+.group h3,
+.themePanel h3 {
+  font-size: 15px;
+  color: var(--ink-2);
+  margin: 18px 0 10px;
+}
+.note {
+  margin: 0 0 16px;
+  color: var(--ink-2);
+  font-size: 14px;
+}
+
+.tester {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 24px;
+  align-items: center;
+  margin-top: 12px;
+}
+.testerForm {
+  display: grid;
+  gap: 12px;
+}
+.result {
+  margin: 0;
+  color: var(--ink-2);
+}
+.testerThumb {
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 20px 16px;
+}
+.card {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.thumb {
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.title {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sub,
+.kw {
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.kw {
+  font-size: 12px;
+  line-height: 1.4;
+  word-break: break-all;
+}
+.tag {
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11px;
+  font-style: normal;
+  vertical-align: 2px;
+}
+
+.themes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+  gap: 16px;
+}
+.themePanel {
+  padding: 4px 16px 16px;
+  border-radius: var(--radius-lg);
+  background: var(--bg);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+/* 强制浅色 / 深色：复制 index.css 里两套变量，这样两种模式能并排看 */
+.themePanel[data-theme='light'] {
+  --bg: #f3f5f9;
+  --surface: #ffffff;
+  --surface-2: #e8ecf2;
+  --ink: #172033;
+  --ink-2: #5f6880;
+  --ink-3: #939aac;
+  --line: #dfe4ec;
+}
+.themePanel[data-theme='dark'] {
+  --bg: #0f141c;
+  --surface: #18202b;
+  --surface-2: #232c39;
+  --ink: #e8edf5;
+  --ink-2: #a3adbf;
+  --ink-3: #6f7a8e;
+  --line: #2a3442;
+}
+.matrix {
+  border-spacing: 6px;
+  width: 100%;
+}
+.matrix th {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ink-2);
+  text-align: right;
+  white-space: nowrap;
+  padding-right: 4px;
+}
+.mini {
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius);
+  overflow: hidden;
+  min-width: 48px;
+}
+
+.smallRow {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+.smallFig {
+  margin: 0;
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+.smallFig figcaption {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.collage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 2px;
+  width: 160px;
+  aspect-ratio: 1;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.calThumbs {
+  display: flex;
+  gap: 3px;
+}
+.calThumb {
+  width: 30px;
+  height: 40px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+@media (max-width: 600px) {
+  .tester {
+    grid-template-columns: 1fr;
+  }
+  .testerThumb {
+    width: 160px;
+  }
+  .themes {
+    grid-template-columns: 1fr;
+  }
+}

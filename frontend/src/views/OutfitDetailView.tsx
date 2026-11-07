@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
-import { errorText, imageUrl, itemCategory, itemTitle, outfitTitle } from '@/api'
+import { errorText, itemCategory, itemTitle, outfitTitle } from '@/api'
+import { ItemThumb } from '@/components/ItemThumb'
 import { confirmDialog } from '@/components/dialogs'
 import { labelOf, STATUSES } from '@/constants'
 import { useDeleteOutfit, useOutfit, useSaveWearLog } from '@/hooks/outfits'
@@ -64,7 +65,7 @@ export default function OutfitDetailView() {
         {sortBySlot(outfit.items).map((it) => (
           <li key={it.id}>
             <Link to={`/wardrobe/${it.id}`} className={s.item}>
-              <img src={imageUrl(it.image_key, 'thumb')} alt="" />
+              <ItemThumb item={it} />
               <span>{itemTitle(it)}</span>
               <small>{itemCategory(it)}</small>
             </Link>

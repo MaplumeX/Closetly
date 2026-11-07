@@ -32,8 +32,9 @@
   text-decoration: none;
   font-size: 14px;
 }
-.item img {
+.item [data-thumb] {
   width: 100%;
+  height: auto;
   aspect-ratio: 3 / 4;
   object-fit: cover;
   border-radius: var(--radius-lg);

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { api, customColorValue, type CustomColor } from '@/api'
 import { colorDialog } from '@/components/dialogs'
+import type { SilhouetteFill } from '@/components/Silhouette'
 import { COLORS, type Color } from '@/constants'
 
 const colorsKey = ['colors'] as const
@@ -28,6 +29,15 @@ export function usePalette(): PaletteColor[] {
     ],
     [data],
   )
+}
+
+/** 占位剪影的填充色：预设色、自定义颜色的色值，多色返回 'multi'，未填主色返回 null */
+export function useSilhouetteFill(color: Color | null): SilhouetteFill {
+  const { data: customs } = useCustomColors()
+  if (!color) return null
+  if (color === 'multi') return 'multi'
+  if (color.startsWith('custom:')) return customs?.find((c) => customColorValue(c.id) === color)?.hex ?? null
+  return COLORS.find((c) => c.value === color)?.hex ?? null
 }
 
 /** 新名称有问题时返回错误文案；exceptId 是正在编辑的颜色自己 */

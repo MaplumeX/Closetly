@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { imageUrl, itemTitle, toBrief, type Item, type ItemBrief } from '@/api'
+import { itemTitle, toBrief, type Item, type ItemBrief } from '@/api'
 import { labelOf, SLOTS, type Slot } from '@/constants'
 import { useItems } from '@/hooks/items'
 import { coveredSlots, mismatchReason, missingSlots, profileOf, profileText } from '@/lib/outfit'
 import { useDebounced } from '@/lib/useDebounced'
+import { ItemThumb } from './ItemThumb'
 import s from './ItemPicker.module.css'
 
 /**
@@ -60,7 +61,7 @@ export function ItemPicker({
     <li key={it.id}>
       <button type="button" className={s.option} aria-pressed={selectedIds.has(it.id)} onClick={() => toggle(it)}
         data-mismatch={reason ? true : undefined}>
-        <img src={imageUrl(it.image_key, 'thumb')} alt="" loading="lazy" />
+        <ItemThumb item={it} />
         <span className={s.name}>{itemTitle(it)}</span>
         {reason && <span className={s.reason}>{reason}</span>}
         <span className={s.check} aria-hidden="true">✓</span>
@@ -111,7 +112,7 @@ export function ItemPicker({
                     {picked.map((it) => (
                       <li key={it.id}>
                         <button type="button" className={s.pickedItem} onClick={() => toggle(it)} aria-label={`移除 ${itemTitle(it)}`}>
-                          <img src={imageUrl(it.image_key, 'thumb')} alt="" />
+                          <ItemThumb item={it} detail={false} />
                           <span className={s.remove} aria-hidden="true">×</span>
                         </button>
                       </li>

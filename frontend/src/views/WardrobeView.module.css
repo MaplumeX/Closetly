@@ -92,13 +92,13 @@
   overflow: hidden;
   background: var(--surface-2);
 }
-.thumb img {
+.thumb [data-thumb] {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.25s;
 }
-.card:hover .thumb img {
+.card:hover .thumb [data-thumb] {
   transform: scale(1.03);
 }
 .badge {

@@ -117,7 +117,7 @@ Price = Annotated[Decimal, Field(ge=0, le=Decimal("9999999.99"), decimal_places=
 class ItemCreateIn(BaseModel):
     slot: Slot
     kind: KindName = None
-    image_key: ImageKey
+    image_key: ImageKey | None = None
     seasons: Seasons
     name: OptText(128) = None
     color: Color | None = None
@@ -156,7 +156,7 @@ class ItemOut(BaseModel):
     id: int
     slot: Slot
     kind: str | None
-    image_key: str
+    image_key: str | None
     name: str | None
     seasons: list[Season]
     color: str | None
@@ -231,9 +231,10 @@ class ItemBrief(BaseModel):
     """搭配、穿着记录中展示单品用的精简信息。"""
 
     id: int
-    image_key: str
+    image_key: str | None
     name: str | None
     slot: Slot
+    color: str | None
     kind: str | None
     status: ItemStatus
     # 挑选搭配时，前端据此判断其余单品是否合适

@@ -24,6 +24,7 @@ def item_brief(item: Item) -> ItemBrief:
         name=item.name,
         slot=item.slot,
         kind=item.kind,
+        color=color_value(item),
         status=item.status,
         seasons=item.seasons,
         occasions=item.occasions,

@@ -1,13 +1,14 @@
-import type { ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { errorText, imageUrl, itemCategory, itemTitle, outfitTitle } from '@/api'
 import { ColorDot } from '@/components/Chips'
+import { ItemThumb } from '@/components/ItemThumb'
 import { confirmDialog } from '@/components/dialogs'
 import { OutfitCollage } from '@/components/OutfitCollage'
 import { Select } from '@/components/Select'
 import { labelOf, OCCASIONS, SEASONS, STATUSES, WARMTH_LABELS, type ItemStatus } from '@/constants'
 import { usePalette } from '@/hooks/colors'
-import { useDeleteItem, useItem, useUpdateItem } from '@/hooks/items'
+import { uploadImage, useDeleteItem, useItem, useUpdateItem } from '@/hooks/items'
 import { useOutfits } from '@/hooks/outfits'
 import { formatDay } from '@/lib/date'
 import s from './ItemDetailView.module.css'
@@ -68,9 +69,16 @@ export default function ItemDetailView() {
       </div>
 
       <div className={s.layout}>
-        <a href={imageUrl(item.image_key)} target="_blank" rel="noreferrer" className={s.photo}>
-          <img src={imageUrl(item.image_key)} alt={itemTitle(item)} />
-        </a>
+        {item.image_key ? (
+          <a href={imageUrl(item.image_key)} target="_blank" rel="noreferrer" className={s.photo}>
+            <ItemThumb item={item} size="full" alt={itemTitle(item)} />
+          </a>
+        ) : (
+          <div className={`${s.photo} ${s.noPhoto}`}>
+            <ItemThumb item={item} alt={itemTitle(item)} />
+            <AddPhoto onUploaded={(key) => update.mutateAsync({ image_key: key })} />
+          </div>
+        )}
 
         <div className={s.info}>
           <div className={`field ${s.status}`}>
@@ -123,6 +131,37 @@ export default function ItemDetailView() {
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+/** 没有照片的衣物：在详情页直接拍照补上 */
+function AddPhoto({ onUploaded }: { onUploaded: (key: string) => Promise<unknown> }) {
+  const input = useRef<HTMLInputElement>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
+  async function onFile(file: File | undefined) {
+    if (!file) return
+    setError('')
+    setBusy(true)
+    try {
+      await onUploaded(await uploadImage(file))
+    } catch (e) {
+      setError(errorText(e))
+    } finally {
+      setBusy(false)
+      if (input.current) input.current.value = ''
+    }
+  }
+
+  return (
+    <div className={s.addPhoto}>
+      <button type="button" className="btn btn-sm" onClick={() => input.current?.click()} disabled={busy}>
+        {busy ? '上传中…' : '补拍照片'}
+      </button>
+      {error && <p className="msg-error" role="alert">{error}</p>}
+      <input ref={input} type="file" accept="image/*" hidden onChange={(e) => onFile(e.target.files?.[0])} />
     </div>
   )
 }

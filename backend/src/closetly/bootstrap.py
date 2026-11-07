@@ -85,7 +85,7 @@ def ensure_admin(db: Session, settings: Settings) -> None:
 
 def cleanup_orphan_images(db: Session, store: ImageStore) -> None:
     referenced: dict[int, set[str]] = {}
-    for user_id, key in db.execute(select(Item.user_id, Item.image_key)):
+    for user_id, key in db.execute(select(Item.user_id, Item.image_key).where(Item.image_key.is_not(None))):
         referenced.setdefault(user_id, set()).add(key)
     if removed := store.cleanup_orphans(referenced):
         log.info("已清理 %d 个未被使用的图片文件", removed)

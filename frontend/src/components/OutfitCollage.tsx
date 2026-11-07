@@ -1,5 +1,6 @@
-import { imageUrl, type ItemBrief } from '@/api'
+import type { ItemBrief } from '@/api'
 import { isMainSlot, sortBySlot } from '@/lib/outfit'
+import { ItemThumb } from './ItemThumb'
 import s from './OutfitCollage.module.css'
 
 const MAX_MAIN = 2
@@ -46,7 +47,7 @@ export function OutfitCollage({ items }: { items: ItemBrief[] }) {
 function Cell({ item, extra = 0 }: { item: ItemBrief; extra?: number }) {
   return (
     <div className={s.cell}>
-      <img src={imageUrl(item.image_key, 'thumb')} alt="" loading="lazy" />
+      <ItemThumb item={item} detail={false} />
       {extra > 0 && <span className={s.more}>+{extra}</span>}
     </div>
   )
