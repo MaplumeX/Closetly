@@ -101,6 +101,11 @@
 .remove:hover {
   color: var(--danger);
 }
+.frame.dragging {
+  border-style: solid;
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
 
 /* 单栏（与 ItemForm 的断点一致）：小图在左，说明和按钮在右 */
 @container content (max-width: 760px) {
