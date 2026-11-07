@@ -1,12 +1,14 @@
 .picker {
   display: grid;
-  gap: 18px;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
 }
 
 /* ---- 部位格子 ---- */
 .board {
   position: sticky;
-  top: 0;
+  top: 24px;
   z-index: 2;
   display: grid;
   gap: 10px;
@@ -44,14 +46,25 @@
   border-color: var(--ink);
   color: var(--bg);
 }
+/* 人体示意：上身、下身、脚从上到下，上装/下装 → 连体 → 外套从里到外 */
 .slots {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-areas:
+    'top onepiece outer'
+    'bottom onepiece outer'
+    'shoes accessory accessory';
   gap: 8px;
 }
+.slot[data-slot='top'] { grid-area: top; }
+.slot[data-slot='bottom'] { grid-area: bottom; }
+.slot[data-slot='onepiece'] { grid-area: onepiece; }
+.slot[data-slot='outer'] { grid-area: outer; }
+.slot[data-slot='shoes'] { grid-area: shoes; }
+.slot[data-slot='accessory'] { grid-area: accessory; }
 .slot {
   display: grid;
   grid-template-rows: auto 1fr;
@@ -104,13 +117,14 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 64px);
   gap: 4px;
+  align-content: start;
 }
-.picked li {
-  flex: 1 1 40px;
-  max-width: 64px;
+/* 同一格选了多件（例如叠穿）：两列并排 */
+.picked[data-many] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .pickedItem {
   position: relative;
@@ -206,6 +220,30 @@
   white-space: nowrap;
   color: var(--ink-2);
 }
+/* 和已选单品不太合适：变淡，并标出原因 */
+.option[data-mismatch] img {
+  opacity: 0.45;
+}
+.option[data-mismatch][aria-pressed='true'] img {
+  opacity: 1;
+}
+.reason {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 60%);
+  color: #fff;
+  font-size: 12px;
+}
+.divider {
+  margin: 6px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-3);
+  font-size: 13px;
+}
 .check {
   position: absolute;
   top: 6px;
@@ -226,12 +264,13 @@
   color: var(--accent-ink);
 }
 
-/* 手机上部位格子排成两行，也不再吸顶，免得挡住衣柜 */
-@media (max-width: 767px) {
+/* 窄的时候上下排列，部位格子也不再吸顶，免得挡住衣柜 */
+@container content (max-width: 760px) {
+  .picker {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
   .board {
     position: static;
-  }
-  .slots {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

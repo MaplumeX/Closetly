@@ -1,25 +1,34 @@
-.layout {
-  display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
-  gap: 32px;
-  align-items: start;
+.headActions {
+  display: flex;
+  gap: 10px;
+}
+.headActions :global(.btn) {
+  min-width: 96px;
 }
 .meta {
-  position: sticky;
-  top: 24px;
   display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
   gap: 16px;
+  margin-bottom: 20px;
 }
-.actions :global(.btn) {
+.meta textarea {
+  min-height: 44px;
+  resize: vertical;
+}
+.meta + :global(.msg-error),
+:global(.msg-error) + :global(.msg-error) {
+  margin-top: -8px;
+  margin-bottom: 16px;
+}
+.mobileSave {
+  margin-top: 20px;
+}
+.mobileSave :global(.btn) {
   min-height: 44px;
   width: 100%;
 }
 @container content (max-width: 760px) {
-  .layout {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
   .meta {
-    position: static;
+    grid-template-columns: 1fr;
   }
 }

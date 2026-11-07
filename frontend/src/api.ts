@@ -132,15 +132,21 @@ export const imageUrl = (key: string, size: 'full' | 'thumb' = 'full') =>
 // ---------- 搭配与穿着记录 ----------
 
 /** 搭配、穿着记录里的精简单品信息 */
-export type ItemBrief = Pick<Item, 'id' | 'image_key' | 'name' | 'slot' | 'kind' | 'status'>
+export type ItemBrief = Pick<
+  Item,
+  'id' | 'image_key' | 'name' | 'slot' | 'kind' | 'status' | 'seasons' | 'occasions' | 'warmth'
+>
 
-export const toBrief = ({ id, image_key, name, slot, kind, status }: ItemBrief): ItemBrief => ({
+export const toBrief = ({ id, image_key, name, slot, kind, status, seasons, occasions, warmth }: ItemBrief): ItemBrief => ({
   id,
   image_key,
   name,
   slot,
   kind,
   status,
+  seasons,
+  occasions,
+  warmth,
 })
 
 export interface Outfit {

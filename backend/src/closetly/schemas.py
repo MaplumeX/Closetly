@@ -236,6 +236,10 @@ class ItemBrief(BaseModel):
     slot: Slot
     kind: str | None
     status: ItemStatus
+    # 挑选搭配时，前端据此判断其余单品是否合适
+    seasons: list[Season]
+    occasions: list[Occasion]
+    warmth: int | None
 
 
 class OutfitCreateIn(BaseModel):
