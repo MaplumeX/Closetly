@@ -1,4 +1,4 @@
-import { labelOf, SLOTS, type Color, type ItemStatus, type Occasion, type Season, type Slot } from './constants'
+import { labelOf, SLOTS, type Color, type Cut, type Fit, type ItemStatus, type Occasion, type Season, type Slot } from './constants'
 
 export class ApiError extends Error {
   status: number
@@ -83,6 +83,10 @@ export interface Item {
   color: Color | null
   occasions: Occasion[]
   warmth: number | null
+  /** 版型：鞋和配饰没有 */
+  fit: Fit | null
+  /** 廓形：只有下装和连体有 */
+  cut: Cut | null
   brand: string | null
   price: number | null
   purchase_date: string | null

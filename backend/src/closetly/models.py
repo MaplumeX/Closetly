@@ -53,6 +53,10 @@ SLOT_LABELS = {
     Slot.ACCESSORY: "配饰",
 }
 
+# 版型（松量）和廓形只对这些部位有意义，其他部位保存时会被清空
+FIT_SLOTS = frozenset({Slot.TOP, Slot.BOTTOM, Slot.ONEPIECE, Slot.OUTER})
+CUT_SLOTS = frozenset({Slot.BOTTOM, Slot.ONEPIECE})
+
 
 class User(Base):
     __tablename__ = "users"
@@ -154,6 +158,10 @@ class Item(Base):
     )
     occasions: Mapped[list[str]] = mapped_column(JSON, default=list)
     warmth: Mapped[int | None] = mapped_column(Integer)  # 1–5
+    # 版型：衣服有多宽松，取值见 schemas.Fit
+    fit: Mapped[str | None] = mapped_column(String(16))
+    # 廓形：直筒、阔腿、A 字等，只用于下装和连体，取值见 schemas.Cut
+    cut: Mapped[str | None] = mapped_column(String(16))
     brand: Mapped[str | None] = mapped_column(String(128))
     price_cents: Mapped[int | None] = mapped_column(Integer)  # 以分为单位，避免浮点误差
     purchase_date: Mapped[date | None] = mapped_column(Date)
