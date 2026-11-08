@@ -9,10 +9,12 @@ from sqlalchemy.orm import Session
 from ..deps import CurrentUserDep, DbDep
 from ..images import ImageStore
 from ..item_queries import color_value, item_load_options, resolve_color, wear_stats
-from ..models import Item, ItemStatus, Slot, Tag, item_tags
+from ..models import CUT_SLOTS, FIT_SLOTS, Item, ItemStatus, Slot, Tag, item_tags
 from ..schemas import (
     CUSTOM_COLOR_PREFIX,
     Color,
+    Cut,
+    Fit,
     ItemCreateIn,
     ItemOut,
     ItemUpdateIn,
@@ -38,6 +40,8 @@ def item_out(item: Item, stats: tuple[int, date] | None = None) -> ItemOut:
         color=color_value(item),
         occasions=item.occasions,
         warmth=item.warmth,
+        fit=item.fit,
+        cut=item.cut,
         brand=item.brand,
         price=item.price_cents / 100 if item.price_cents is not None else None,
         purchase_date=item.purchase_date,
@@ -95,6 +99,14 @@ def _check_image(db: Session, store: ImageStore, user_id: int, key: str, item_id
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "这张图片已被其他衣物使用，请重新上传")
 
 
+def _clear_inapplicable(fields: dict, slot: Slot) -> None:
+    """部位不适用的版型、廓形直接清空，不报错：用户改部位时不该被已隐藏的字段拦住。"""
+    if slot not in FIT_SLOTS:
+        fields["fit"] = None
+    if slot not in CUT_SLOTS:
+        fields["cut"] = None
+
+
 def _to_cents(price: Decimal | None) -> int | None:
     return None if price is None else int(price * 100)
 
@@ -109,6 +121,8 @@ def list_items(
     season: Annotated[list[Season] | None, Query()] = None,
     color: Annotated[list[Color] | None, Query()] = None,
     occasion: Annotated[list[Occasion] | None, Query()] = None,
+    fit: Annotated[list[Fit] | None, Query()] = None,
+    cut: Annotated[list[Cut] | None, Query()] = None,
     item_status: Annotated[list[ItemStatus] | None, Query(alias="status")] = None,
     tag: Annotated[list[str] | None, Query()] = None,
     photo: bool | None = None,
@@ -126,6 +140,10 @@ def list_items(
         stmt = stmt.where(_json_has_any(Item.seasons, season))
     if occasion:
         stmt = stmt.where(_json_has_any(Item.occasions, occasion))
+    if fit:
+        stmt = stmt.where(Item.fit.in_(fit))
+    if cut:
+        stmt = stmt.where(Item.cut.in_(cut))
     if color:
         presets = [c for c in color if not c.startswith(CUSTOM_COLOR_PREFIX)]
         custom_ids = [int(c.removeprefix(CUSTOM_COLOR_PREFIX)) for c in color if c.startswith(CUSTOM_COLOR_PREFIX)]
@@ -156,6 +174,7 @@ def create_item(body: ItemCreateIn, request: Request, user: CurrentUserDep, db: 
     if body.image_key:
         _check_image(db, request.app.state.image_store, user.id, body.image_key)
     data = body.model_dump(exclude={"tags", "price", "color"})
+    _clear_inapplicable(data, body.slot)
     item = Item(
         user_id=user.id, price_cents=_to_cents(body.price), **resolve_color(db, user.id, body.color), **data
     )
@@ -180,6 +199,8 @@ def update_item(item_id: int, body: ItemUpdateIn, request: Request, user: Curren
     for field in ("slot", "seasons", "occasions", "status", "tags"):
         if field in changes and changes[field] is None:
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, f"{field} 不能为空")
+
+    _clear_inapplicable(changes, changes.get("slot", item.slot))
 
     # 换照片或删除照片（image_key 传 null）后，旧图片文件在提交成功后删除
     old_image = None

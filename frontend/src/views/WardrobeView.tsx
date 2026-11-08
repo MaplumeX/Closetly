@@ -2,14 +2,15 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 import { Link, useSearchParams } from 'react-router'
 import { errorText, itemKind, itemTitle, type Item } from '@/api'
 import { ChipGroup, ChipSelect, ColorDot, ColorSwatches } from '@/components/Chips'
-import { labelOf, OCCASIONS, SEASONS, SLOTS, STATUSES, type ItemStatus, type Occasion, type Season, type Slot } from '@/constants'
+import { CUTS, FIT_SLOTS, FITS, labelOf, OCCASIONS, SEASONS, SLOTS, STATUSES, type Cut, type Fit, type ItemStatus, type Occasion, type Season, type Slot } from '@/constants'
 import { usePalette, type PaletteColor } from '@/hooks/colors'
 import { useItems, useKinds, useTags } from '@/hooks/items'
+import { cutOptions } from '@/lib/silhouette'
 import { ItemThumb } from '@/components/ItemThumb'
 import s from './WardrobeView.module.css'
 
 /** 面板里的多选筛选项；URL 参数名与后端接口一致 */
-const LIST_PARAMS = ['season', 'color', 'occasion', 'status', 'tag'] as const
+const LIST_PARAMS = ['season', 'color', 'occasion', 'fit', 'cut', 'status', 'tag'] as const
 
 /** 照片是单选：photo=false 只看还没拍照的，方便集中补拍 */
 const PHOTO_OPTIONS = [
@@ -45,14 +46,22 @@ export default function WardrobeView() {
       p.delete(k)
       values.forEach((v) => p.append(k, v))
     })
-  /** 切换部位时清掉类型，因为类型是挂在部位下面的 */
+  /** 切换部位时清掉类型和廓形，因为它们是挂在部位下面的；新部位没有版型时也清掉版型 */
   const setSlot = (v: Slot | null) =>
     update((p) => {
       p.delete('kind')
+      p.delete('cut')
+      if (v !== null && !FIT_SLOTS.includes(v)) p.delete('fit')
       if (v === null) p.delete('slot')
       else p.set('slot', v)
     })
-  const setKind = (v: string | null) => update((p) => (v === null ? p.delete('kind') : p.set('kind', v)))
+  /** 换类型时可选的廓形会变，清掉旧选择，免得留下看不见的筛选条件 */
+  const setKind = (v: string | null) =>
+    update((p) => {
+      p.delete('cut')
+      if (v === null) p.delete('kind')
+      else p.set('kind', v)
+    })
 
   // ---- 搜索框：输入停顿 300ms 后再写入 URL ----
   const [q, setQ] = useState(params.get('q') ?? '')
@@ -68,6 +77,9 @@ export default function WardrobeView() {
   const kind = params.get('kind')
   const { data: kinds } = useKinds(slot)
   const kindOptions = useMemo(() => (kinds ?? []).map((k) => ({ value: k.name, label: `${k.name} ${k.count}` })), [kinds])
+
+  const showFit = slot === null || FIT_SLOTS.includes(slot)
+  const cutFilter = slot && kind ? cutOptions(slot, kind) : slot === 'bottom' || slot === 'onepiece' ? CUTS : []
 
   const photo = (PHOTO_OPTIONS.find((o) => o.value === params.get('photo'))?.value ?? null) as PhotoFilter | null
   const setPhoto = (v: PhotoFilter | null) => update((p) => (v === null ? p.delete('photo') : p.set('photo', v)))
@@ -120,6 +132,16 @@ export default function WardrobeView() {
           <Filter label="场合">
             <ChipGroup label="场合" options={OCCASIONS} value={list('occasion') as Occasion[]} onChange={setList('occasion')} />
           </Filter>
+          {showFit && (
+            <Filter label="版型">
+              <ChipGroup label="版型" options={FITS} value={list('fit') as Fit[]} onChange={setList('fit')} />
+            </Filter>
+          )}
+          {cutFilter.length > 0 && (
+            <Filter label="廓形">
+              <ChipGroup label="廓形" options={cutFilter} value={list('cut') as Cut[]} onChange={setList('cut')} />
+            </Filter>
+          )}
           <Filter label="状态" hint="不选时显示除「已淘汰」以外的全部">
             <ChipGroup label="状态" options={STATUSES} value={list('status') as ItemStatus[]} onChange={setList('status')} />
           </Filter>

@@ -7,7 +7,7 @@ import { ItemThumb } from '@/components/ItemThumb'
 import { confirmDialog } from '@/components/dialogs'
 import { Menu } from '@/components/Menu'
 import { OutfitCollage } from '@/components/OutfitCollage'
-import { labelOf, STATUSES } from '@/constants'
+import { CUTS, FITS, labelOf, STATUSES } from '@/constants'
 import { usePalette } from '@/hooks/colors'
 import { useDeleteItem, useItem, useUpdateItem } from '@/hooks/items'
 import { useOutfits, useSaveWearLog } from '@/hooks/outfits'
@@ -128,6 +128,9 @@ export default function ItemDetailView() {
               {item.seasons.length > 0 && <SeasonBar seasons={item.seasons} />}
               {item.occasions.length > 0 && <OccasionChips occasions={item.occasions} />}
               {item.warmth && <WarmthRange min={item.warmth} max={item.warmth} />}
+            </Group>
+            <Group label="版型">
+              {[labelOf(FITS, item.fit), labelOf(CUTS, item.cut)].filter(Boolean).join(' · ')}
             </Group>
             <Group label="购买">{purchase}</Group>
             <Group label="收纳">{item.location}</Group>

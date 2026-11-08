@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { customColorValue, errorText, type ItemInput } from '@/api'
-import { KIND_EXAMPLES, OCCASIONS, SEASONS, SLOTS, STATUSES, labelOf, type ItemStatus } from '@/constants'
+import { FIT_SLOTS, FITS, KIND_EXAMPLES, OCCASIONS, SEASONS, SLOTS, STATUSES, labelOf, type ItemStatus } from '@/constants'
 import { formatDay } from '@/lib/date'
 import { toInput, type Draft } from '@/lib/itemDraft'
+import { cutOptions } from '@/lib/silhouette'
 import { useAddColor, usePalette } from '@/hooks/colors'
 import { useKinds, useTags } from '@/hooks/items'
 import { ChipGroup, ChipSelect, ColorSwatches } from './Chips'
@@ -68,6 +69,7 @@ export function ItemForm({
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setD((prev) => ({ ...prev, [k]: v }))
 
   const [moreOpen, setMoreOpen] = useState(() => hasMore(initial))
+  const cuts = d.slot ? cutOptions(d.slot, d.kind, d.name) : []
 
   // 校验没通过时滚动到第一个出错的字段。要等错误提示渲染出来，所以放在 effect 里
   const form = useRef<HTMLFormElement>(null)
@@ -131,6 +133,16 @@ export function ItemForm({
               <input value={d.name} onChange={(e) => set('name', e.target.value)} maxLength={128} placeholder="默认显示类型或部位" />
             </Field>
           </div>
+          {d.slot && FIT_SLOTS.includes(d.slot) && (
+            <Field label="版型" as="div">
+              <ChipSelect label="版型" options={FITS} value={d.fit} onChange={(v) => set('fit', v)} />
+            </Field>
+          )}
+          {cuts.length > 0 && (
+            <Field label="廓形" as="div">
+              <ChipSelect label="廓形" options={cuts} value={d.cut} onChange={(v) => set('cut', v)} />
+            </Field>
+          )}
           <Field label="主色" as="div">
             <ColorSwatches label="主色" single options={palette} value={d.color ? [d.color] : []}
               onChange={(v) => set('color', v[0] ?? null)} onAdd={onAddColor} />

@@ -57,15 +57,41 @@ export const STATUSES = [
   { value: 'retired', label: '已淘汰' },
 ] as const
 
+/** 版型：衣服有多宽松 */
+export const FITS = [
+  { value: 'slim', label: '修身' },
+  { value: 'regular', label: '标准' },
+  { value: 'relaxed', label: '宽松' },
+  { value: 'oversized', label: 'Oversize' },
+] as const
+
+/** 廓形：录入时按类型只列出裤子或裙子适用的选项，见 lib/silhouette.ts 的 cutOptions */
+export const CUTS = [
+  { value: 'straight', label: '直筒' },
+  { value: 'skinny', label: '小脚' },
+  { value: 'tapered', label: '锥形' },
+  { value: 'wide', label: '阔腿' },
+  { value: 'flared', label: '喇叭' },
+  { value: 'a_line', label: 'A字' },
+  { value: 'pencil', label: '包臀' },
+  { value: 'pleated', label: '百褶' },
+  { value: 'fishtail', label: '鱼尾' },
+] as const
+
 export const WARMTH_LABELS = ['', '很薄', '薄', '适中', '厚', '很厚'] as const
 
 export type Slot = (typeof SLOTS)[number]['value']
 export type Season = (typeof SEASONS)[number]['value']
 export type Occasion = (typeof OCCASIONS)[number]['value']
+export type Fit = (typeof FITS)[number]['value']
+export type Cut = (typeof CUTS)[number]['value']
 export type PresetColor = (typeof COLORS)[number]['value']
 /** 衣物的主色：预设色，或 `custom:<id>` 表示自定义颜色 */
 export type Color = PresetColor | `custom:${number}`
 export type ItemStatus = (typeof STATUSES)[number]['value']
+
+/** 有版型的部位，鞋和配饰没有 */
+export const FIT_SLOTS: readonly Slot[] = ['top', 'bottom', 'onepiece', 'outer']
 
 export const labelOf = <T extends { value: string; label: string }>(list: readonly T[], v: string | null) =>
   list.find((x) => x.value === v)?.label ?? ''

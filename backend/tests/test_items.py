@@ -215,3 +215,46 @@ def test_brief_includes_color(admin_client):
     briefs = {i["id"]: i for i in r.json()["items"]}
     assert briefs[a["id"]]["image_key"] is None and briefs[a["id"]]["color"] == "navy"
     assert briefs[b["id"]]["color"] is None
+
+
+def test_fit_and_cut(admin_client):
+    item = new_item(admin_client, slot="bottom", kind="牛仔裤", fit="relaxed", cut="wide")
+    assert (item["fit"], item["cut"]) == ("relaxed", "wide")
+    assert (new_item(admin_client)["fit"], new_item(admin_client)["cut"]) == (None, None)  # 选填
+
+    r = admin_client.patch(f"/api/items/{item['id']}", json={"fit": None})
+    assert r.json()["fit"] is None and r.json()["cut"] == "wide"  # 只清空传了 null 的字段
+
+
+def test_fit_and_cut_validation(admin_client):
+    for field in ({"fit": "baggy"}, {"cut": "bootcut"}):
+        body = {"slot": "bottom", "seasons": ["summer"], **field}
+        assert admin_client.post("/api/items", json=body).status_code == 422, body
+
+
+def test_fit_and_cut_cleared_for_inapplicable_slot(admin_client):
+    top = new_item(admin_client, fit="slim", cut="wide")  # 上装有版型，没有廓形
+    assert (top["fit"], top["cut"]) == ("slim", None)
+    shoes = new_item(admin_client, slot="shoes", kind="运动鞋", fit="slim", cut="wide")
+    assert (shoes["fit"], shoes["cut"]) == (None, None)
+
+    # 改部位时一并清空，即使请求里没有带这两个字段
+    pants = new_item(admin_client, slot="bottom", kind="牛仔裤", fit="slim", cut="straight")
+    r = admin_client.patch(f"/api/items/{pants['id']}", json={"slot": "top"})
+    assert (r.json()["fit"], r.json()["cut"]) == ("slim", None)
+    r = admin_client.patch(f"/api/items/{pants['id']}", json={"slot": "accessory"})
+    assert (r.json()["fit"], r.json()["cut"]) == (None, None)
+
+
+def test_fit_and_cut_filters(admin_client):
+    a = new_item(admin_client, slot="bottom", kind="西裤", fit="slim", cut="straight")
+    b = new_item(admin_client, slot="bottom", kind="阔腿裤", fit="relaxed", cut="wide")
+    new_item(admin_client)
+
+    def ids(**params):
+        return {i["id"] for i in admin_client.get("/api/items", params=params).json()}
+
+    assert ids(fit="slim") == {a["id"]}
+    assert ids(fit=["slim", "relaxed"]) == {a["id"], b["id"]}
+    assert ids(cut="wide") == {b["id"]}
+    assert ids(fit="slim", cut="wide") == set()

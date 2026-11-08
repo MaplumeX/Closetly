@@ -1,4 +1,4 @@
-import type { Slot } from '@/constants'
+import { CUTS, type Cut, type Slot } from '@/constants'
 
 /** 没有照片时占位图用的衣物剪影 */
 export type Shape =
@@ -88,6 +88,21 @@ export function resolveShape(slot: Slot, kind?: string | null, name?: string | n
   }
   return fallback
 }
+
+const pickCuts = (values: readonly Cut[]) => CUTS.filter((c) => values.includes(c.value))
+const PANTS_CUTS = pickCuts(['straight', 'skinny', 'tapered', 'wide', 'flared'])
+const SKIRT_CUTS = pickCuts(['straight', 'a_line', 'pencil', 'pleated', 'fishtail'])
+const CUTS_BY_SHAPE: Partial<Record<Shape, readonly (typeof CUTS)[number][]>> = {
+  pants: PANTS_CUTS,
+  shorts: PANTS_CUTS,
+  jumpsuit: PANTS_CUTS,
+  skirt: SKIRT_CUTS,
+  dress: SKIRT_CUTS,
+}
+
+/** 这件衣物可选的廓形：沿用剪影的关键词判断它是裤装还是裙装；其他衣物没有廓形，返回空列表 */
+export const cutOptions = (slot: Slot, kind?: string | null, name?: string | null) =>
+  CUTS_BY_SHAPE[resolveShape(slot, kind, name)] ?? []
 
 /** 原型页用：列出每个部位的规则，方便核对 */
 export const SHAPE_RULES = RULES

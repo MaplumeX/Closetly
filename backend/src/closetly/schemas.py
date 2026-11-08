@@ -74,6 +74,8 @@ class SiteSettingsUpdateIn(BaseModel):
 
 Season = Literal["spring", "summer", "autumn", "winter"]
 Occasion = Literal["commute", "casual", "sport", "formal"]
+Fit = Literal["slim", "regular", "relaxed", "oversized"]
+Cut = Literal["straight", "skinny", "tapered", "wide", "flared", "a_line", "pencil", "pleated", "fishtail"]
 PresetColor = Literal[
     "black", "white", "gray", "beige", "brown", "red", "pink", "orange",
     "yellow", "green", "blue", "navy", "purple", "multi",
@@ -123,6 +125,8 @@ class ItemCreateIn(BaseModel):
     color: Color | None = None
     occasions: Occasions = []
     warmth: Annotated[int, Field(ge=1, le=5)] | None = None
+    fit: Fit | None = None
+    cut: Cut | None = None
     brand: OptText(128) = None
     price: Price | None = None
     purchase_date: date | None = None
@@ -143,6 +147,8 @@ class ItemUpdateIn(BaseModel):
     color: Color | None = None
     occasions: Occasions | None = None
     warmth: Annotated[int, Field(ge=1, le=5)] | None = None
+    fit: Fit | None = None
+    cut: Cut | None = None
     brand: OptText(128) = None
     price: Price | None = None
     purchase_date: date | None = None
@@ -162,6 +168,8 @@ class ItemOut(BaseModel):
     color: str | None
     occasions: list[Occasion]
     warmth: int | None
+    fit: Fit | None
+    cut: Cut | None
     brand: str | None
     price: float | None
     purchase_date: date | None
